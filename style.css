@@ -1,0 +1,41 @@
+/* ios bounce */
+html,
+body {
+	height: 100%;
+	width: 100%;
+	overflow: auto;
+	color: white;
+	font-family: Verdana, monospace, sans-serif;
+	background-color: hsl(240, 50%, 10%); /* #0d0d26 */
+}
+
+a { color: blue; }
+
+body {
+	margin: 0px;
+	overflow: hidden;
+	text-align: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+#desktop {
+	opacity: 0;
+	transition: opacity 2s ease-in;
+}
+
+#three {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	/*display: none;*/
+}
+
+#ui {
+	z-index: 1;
+	top: 0;
+	left: 0;
+}
