@@ -1,6 +1,3 @@
-/* game states  */
-let state = 'intro';
-
 let voice; /* init with tap */
 
 /* start */
@@ -78,19 +75,43 @@ function animate() {
 }
 
 
+/* lines */
+Keypad = { sprites: {}};
+Keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
 
-function draw() {
-
+function start() {
+	let x = 32, y = 10;
+	for (let i = 0; i < Keypad.files.length; i++) {
+		const k = Keypad.files[i];
+		Keypad.sprites[k] = new Sprite(x, y);
+		Keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
+		x += 48;
+		if (x > Game.width - 64) {
+			x = 32;
+			y += 48;
+		}
+	}
 }
 
-// Game.init({
-// 	width: window.innerWidth, 
-// 	height: window.innerHeight, 
-// 	lps: 10, 
-// 	stats: false,
-// 	debug: false,
-// 	mixedColors: false
-// });
+function draw() {
+	if (Game.scene == 'keypad') {
+		for (const k in Keypad.sprites) {
+			Keypad.sprites[k].display();
+		}
+	}
+}
+	
+
+Game.init({
+	width: window.innerWidth, 
+	height: window.innerHeight, 
+	lps: 10, 
+	stats: false,
+	debug: false,
+	mixedColors: false
+});
+Game.scene = 'keypad';
+Game.ctx.strokeStyle = "#fff";
 
 
 /* boring */
