@@ -1,6 +1,5 @@
 let voice; /* init with tap */
 
-/* start */
 // better than mobile check, includes ipad
 function onMotion(ev) {
 	window.removeEventListener('devicemotion', onMotion, false);
@@ -52,14 +51,33 @@ function init() {
 
 	mixer = new THREE.AnimationMixer( scene );
 
-	const loader = new THREE.GLTFLoader();
+	const loadingManager = new THREE.LoadingManager();
+	loadingManager.onProgress = function( item, loaded, total ) {
+		// console.log( item, loaded, total );
+	};
+	loadingManager.onLoad = function() {
+		// console.log( 'loaded' );
+		animate(); // move to start or whatever 
+	};
+
+	const loader = new THREE.GLTFLoader( loadingManager );
 	loader.load("models/toilet.gltf", gltf => {
 		toilet = gltf.scene;
 		toilet.rotation.y = Math.PI;
 		toilet.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
 		scene.add( toilet );
-		console.log(toilet);
-		animate(); // move to start or whatever 
+	});
+	loader.load("models/toad.gltf", gltf => {
+		console.log( gltf );
+		toad = gltf.scene;
+		toad.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
+		// toad.traverse(o => { if (o.material) console.log(o, o.material.color) });
+		toad.animations = gltf.animations;
+		toad.rotation.y = Math.PI;
+		toad.scale.set( 0.06, 0.06, 0.06 );
+		toad.position.set( 0, -0.3, -0.4 );
+		mixer.clipAction( toad.animations[0], toad ).play();
+		scene.add( toad );
 	});
 }
 
@@ -68,7 +86,7 @@ function animate() {
 	if (performance.now() > interval + timer) {
 		timer = performance.now();
 		controls.update();
-		// mixer.update( clock.getDelta() );
+		mixer.update( clock.getDelta() );
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
 	}
@@ -78,6 +96,21 @@ function animate() {
 /* lines */
 Keypad = { sprites: {}};
 Keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
+let tap;
+Sprite.prototype.focus = function(callback) {
+	this.fSpeed = 9;
+	this.animation.overrideProperty('jig', 1);
+	this.displayFunc = function() {
+		this.animation.jig += this.fSpeed;
+		if (this.animation.jig >= 20) this.fSpeed *= -1;
+		if (this.animation.jig <= 0) {
+			this.fSpeed = 0;
+			this.animation.jig = undefined;
+			this.displayFunc = undefined;
+			if (callback) callback();
+		}
+	};
+};
 
 function start() {
 	let x = 32, y = 10;
@@ -91,15 +124,40 @@ function start() {
 			y += 48;
 		}
 	}
+	tap = new Sprite(0, 0);
+	tap.addAnimation('/drawings/ui/tap.json');
 }
 
 function draw() {
-	if (Game.scene == 'keypad') {
+	if (Game.scene == 'tap') {
+		tap.display();
+	} else if (Game.scene == 'keypad') {
 		for (const k in Keypad.sprites) {
 			Keypad.sprites[k].display();
 		}
 	}
 }
+
+/* events */
+function tapStart(ev) {
+	lastTouch = ev.touches[0];
+}
+
+function tapEnd(ev) {
+	switch (Game.scene) {
+		case 'tap':
+			if (tap.tap(lastTouch.clientX, lastTouch.clientY)) {
+				tap.focus(() => {
+					Game.scene = 'intro';
+				});
+			}
+		break;
+	}
+}
+
+let lastTouch;
+window.addEventListener('touchstart', tapStart);
+window.addEventListener('touchend', tapEnd);
 	
 
 Game.init({
@@ -110,7 +168,7 @@ Game.init({
 	debug: false,
 	mixedColors: false
 });
-Game.scene = 'keypad';
+Game.scene = 'tap';
 Game.ctx.strokeStyle = "#fff";
 
 
