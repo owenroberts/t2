@@ -126,12 +126,13 @@ function animate() {
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
 let tap;
-Sprite.prototype.focus = function(callback) {
-	this.fSpeed = 9;
+Sprite.prototype.focus = function(speed, callback) {
+	this.fSpeed = speed; // bigger is faster 
+	const limit = speed * 4;
 	this.animation.overrideProperty('jig', 1);
 	this.displayFunc = function() {
 		this.animation.jig += this.fSpeed;
-		if (this.animation.jig >= 20) this.fSpeed *= -1;
+		if (this.animation.jig >= limit) this.fSpeed *= -1;
 		if (this.animation.jig <= 0) {
 			this.fSpeed = 0;
 			this.animation.jig = undefined;
@@ -145,7 +146,8 @@ Sprite.prototype.focus = function(callback) {
  // ready / needs : [ drawing, voice, keypad, raycast ]
 const dialogs = [
 	{ audio: 'hey', drawing: 'hey', next: 'dialog', ready: [false, false, true, false], delay: 1000 },
-	{ audio: 'help', drawing: 'help', next: 'dialog', ready: [false, false, true, true], delay: 2000 }
+	{ audio: 'help', drawing: 'help', next: 'dialog', ready: [false, false, true, true], delay: 2000 },
+	{ audio: 'password', drawing: 'password', next: 'keypad', ready: [false, false, true, true], delay: 2000 }
 ];
 let dialogSprite;
 let currentDialog = 0;
@@ -168,9 +170,7 @@ function loadDialog() {
 	const dialog = dialogs[currentDialog];
 	dialogSprite.resetSize();
 	dialogSprite.addAnimation(`/drawings/dialogs/${dialog.drawing}.json`, () => {
-		console.log('set on played');
 		dialogSprite.animation.onPlayedState = function() {
-			console.log('set on played');
 			dialog.ready[0] = true;
 		};
 	});
@@ -186,15 +186,21 @@ function loadDialog() {
 }
 
 function start() {
-	let x = 32, y = 10;
+	const o = 6;
+	const c = Math.floor(width/56);
+	const w = width / c;
+	let x = 0, y = 10;
+	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
-		const k = keypad.files[i];
-		keypad.sprites[k] = new Sprite(x, y);
+		const index = Cool.randomInt(keys.length - 1);
+		const k = keys[index];
+		keys.splice(index, 1);
+		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
 		keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
-		x += 48;
-		if (x > Game.width - 64) {
-			x = 32;
-			y += 48;
+		x += w;
+		if (x > Game.width - w) {
+			x = 0;
+			y += 68;
 		}
 	}
 	tap = new Sprite(0, 0);
@@ -226,7 +232,7 @@ function draw() {
 /* events */
 let lastTouch;
 function tapStart(ev) {
-	lastTouch = ev.touches[0];
+	lastTouch = { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
 }
 
 function tapEnd(ev) {
@@ -234,12 +240,21 @@ function tapEnd(ev) {
 		case 'tap':
 			voice = new Audio();
 			// voice.loop = true;
-			if (tap.tap(lastTouch.clientX, lastTouch.clientY)) {
-				tap.focus(() => {
-					Game.scene = 'dialog';
+			if (tap.tap(lastTouch.x, lastTouch.y)) {
+				tap.focus(4, () => {
+					Game.scene = 'keypad';
 					animate();
 					loadDialog();
 				});
+			}
+		break;
+		case 'keypad':
+			for (const k in keypad.sprites) {
+				const key =  keypad.sprites[k];
+				if (key.tap(lastTouch.x, lastTouch.y)) {
+					console.log(k);
+					key.focus(2);
+				}
 			}
 		break;
 	}
