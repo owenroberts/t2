@@ -4,10 +4,16 @@ function onMotion(ev) {
 	if (ev.acceleration.x != null || ev.accelerationIncludingGravity.x != null) {
 		document.getElementById('desktop').remove();
 		init();
-		// uiLines.loadAnimation(uiLines.files.intro, () => {
-		// 	uiLines.ctx.lineWidth = 2;
-		// 	init();
-		// });
+		Game.init({
+			width: window.innerWidth, 
+			height: window.innerHeight, 
+			lps: 10, 
+			stats: false,
+			debug: false,
+			mixedColors: false
+		});
+		Game.scene = 'tap';
+		Game.ctx.strokeStyle = "#fff";
 	}
 }
 window.addEventListener('devicemotion', onMotion, false);
@@ -21,7 +27,7 @@ let camera, scene, renderer, controls;
 let clock, mixer;
 let toad, toilet;
 let raycaster;
-let testCube;
+const vector = new THREE.Vector3();
 
 // const colors = [ 0x7AFFE2, 0xF8EF71, 0xEBB0EC, 0x9A8DD7, 0xBB6DF2, 0xF0ACDA ]; /* new colors ? */
 // const outlineColor = Cool.random(colors);
@@ -74,22 +80,31 @@ function init() {
 		toad = gltf.scene;
 		toad.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
 		// toad.traverse(o => { if (o.material) console.log(o, o.material.color) });
-		toad.animations = gltf.animations;
+		toad.animations = {
+			wavetalk: gltf.animations[0],
+			wave: gltf.animations[1]
+		};
 		toad.rotation.y = Math.PI;
 		toad.scale.set( 0.06, 0.06, 0.06 );
 		toad.position.set( 0, -0.3, -0.4 );
-		mixer.clipAction( toad.animations[0], toad ).play();
+		toad.animations.current = 'wave';
+		toad.playAnimation = function(label) {
+			mixer.clipAction( toad.animations[toad.animations.current], toad ).stop();
+			mixer.clipAction( toad.animations[label], toad ).play();
+			toad.animations.current = label;
+		};
+		mixer.clipAction( toad.animations.wave, toad ).play();
 		scene.add( toad );
 	});
 
-	/* test cube */
+	/* test cube
 	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
 	testCube =  new THREE.Mesh( geometry, material );
+	*/
 	// scene.add( testCube );
-	
 }
-var vector = new THREE.Vector3();
+
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
@@ -102,7 +117,7 @@ function animate() {
 		if (Game.scene == 'dialog' && currentDialog == 0) {
 			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
 			const intersects = raycaster.intersectObjects( scene.children, true );
-			if (intersects.length) nextDialog();
+			if (intersects.length) dialogs[currentDialog].ready[3] = true;
 		}
 	}
 }
@@ -127,10 +142,12 @@ Sprite.prototype.focus = function(callback) {
 };
 
 /* dialogs */
+ // ready / needs : [ drawing, voice, keypad, raycast ]
 const dialogs = [
-	{ audio: 'hey', drawing: 'hey', next: 'keypad' }
+	{ audio: 'hey', drawing: 'hey', next: 'dialog', ready: [false, false, true, false], delay: 1000 },
+	{ audio: 'help', drawing: 'help', next: 'dialog', ready: [false, false, true, true], delay: 2000 }
 ];
-let dialog;
+let dialogSprite;
 let currentDialog = 0;
 let voice; /* init with tap */
 
@@ -148,9 +165,24 @@ function nextDialog() {
 }
 
 function loadDialog() {
-	dialog.addAnimation(`/drawings/dialogs/${dialogs[currentDialog].drawing}.json`);
-	voice.src = `/audio/${dialogs[currentDialog].audio}.mp3`;
+	const dialog = dialogs[currentDialog];
+	dialogSprite.resetSize();
+	dialogSprite.addAnimation(`/drawings/dialogs/${dialog.drawing}.json`, () => {
+		console.log('set on played');
+		dialogSprite.animation.onPlayedState = function() {
+			console.log('set on played');
+			dialog.ready[0] = true;
+		};
+	});
+	voice.src = `/audio/${dialog.audio}.mp3`;
+	function voiceEnd() {
+		dialog.ready[1] = true;
+		toad.playAnimation('wave');
+		voice.removeEventListener('ended', voiceEnd);
+	}
+	voice.addEventListener('ended', voiceEnd);
 	voice.play();
+	toad.playAnimation('wavetalk');
 }
 
 function start() {
@@ -167,8 +199,7 @@ function start() {
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('/drawings/ui/tap.json');
-
-	dialog = new Sprite(0, 0);
+	dialogSprite = new Sprite(0, 0);
 }
 
 function draw() {
@@ -177,7 +208,12 @@ function draw() {
 			tap.display();
 		break;
 		case 'dialog':
-			dialog.display();
+			dialogSprite.display();
+			/* check current dialog */
+			if (dialogs[currentDialog].ready.every(e => { return e; }) && !dialogs[currentDialog].played) {
+				dialogs[currentDialog].played = true;
+				setTimeout(nextDialog, dialogs[currentDialog].delay);
+			}
 		break;
 		case 'keypad':
 			for (const k in keypad.sprites) {
@@ -188,6 +224,7 @@ function draw() {
 }
 
 /* events */
+let lastTouch;
 function tapStart(ev) {
 	lastTouch = ev.touches[0];
 }
@@ -196,7 +233,7 @@ function tapEnd(ev) {
 	switch (Game.scene) {
 		case 'tap':
 			voice = new Audio();
-			voice.loop = true;
+			// voice.loop = true;
 			if (tap.tap(lastTouch.clientX, lastTouch.clientY)) {
 				tap.focus(() => {
 					Game.scene = 'dialog';
@@ -207,24 +244,9 @@ function tapEnd(ev) {
 		break;
 	}
 }
-
-let lastTouch;
 window.addEventListener('touchstart', tapStart);
 window.addEventListener('touchend', tapEnd);
 	
-
-Game.init({
-	width: window.innerWidth, 
-	height: window.innerHeight, 
-	lps: 10, 
-	stats: false,
-	debug: false,
-	mixedColors: false
-});
-Game.scene = 'tap';
-Game.ctx.strokeStyle = "#fff";
-
-
 /* boring */
 function onWindowResize() { 
 	width = document.documentElement.clientWidth;
