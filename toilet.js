@@ -1,5 +1,3 @@
-let voice; /* init with tap */
-
 // better than mobile check, includes ipad
 function onMotion(ev) {
 	window.removeEventListener('devicemotion', onMotion, false);
@@ -22,6 +20,8 @@ let width = window.innerWidth, height = window.innerHeight;
 let camera, scene, renderer, controls;
 let clock, mixer;
 let toad, toilet;
+let raycaster;
+let testCube;
 
 // const colors = [ 0x7AFFE2, 0xF8EF71, 0xEBB0EC, 0x9A8DD7, 0xBB6DF2, 0xF0ACDA ]; /* new colors ? */
 // const outlineColor = Cool.random(colors);
@@ -49,6 +49,8 @@ function init() {
 	camera.position.z = -1;
 	camera.position.y = 2;
 
+	raycaster = new THREE.Raycaster( );
+
 	mixer = new THREE.AnimationMixer( scene );
 
 	const loadingManager = new THREE.LoadingManager();
@@ -57,7 +59,8 @@ function init() {
 	};
 	loadingManager.onLoad = function() {
 		// console.log( 'loaded' );
-		animate(); // move to start or whatever 
+		// move to start or whatever 
+		// calling animate from game, could init game here?
 	};
 
 	const loader = new THREE.GLTFLoader( loadingManager );
@@ -68,7 +71,6 @@ function init() {
 		scene.add( toilet );
 	});
 	loader.load("models/toad.gltf", gltf => {
-		console.log( gltf );
 		toad = gltf.scene;
 		toad.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
 		// toad.traverse(o => { if (o.material) console.log(o, o.material.color) });
@@ -79,8 +81,15 @@ function init() {
 		mixer.clipAction( toad.animations[0], toad ).play();
 		scene.add( toad );
 	});
-}
 
+	/* test cube */
+	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+	testCube =  new THREE.Mesh( geometry, material );
+	// scene.add( testCube );
+	
+}
+var vector = new THREE.Vector3();
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
@@ -89,13 +98,18 @@ function animate() {
 		mixer.update( clock.getDelta() );
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
+
+		if (Game.scene == 'dialog' && currentDialog == 0) {
+			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
+			const intersects = raycaster.intersectObjects( scene.children, true );
+			if (intersects.length) nextDialog();
+		}
 	}
 }
 
-
 /* lines */
-Keypad = { sprites: {}};
-Keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
+const keypad = { sprites: {} };
+keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
 let tap;
 Sprite.prototype.focus = function(callback) {
 	this.fSpeed = 9;
@@ -112,12 +126,39 @@ Sprite.prototype.focus = function(callback) {
 	};
 };
 
+/* dialogs */
+const dialogs = [
+	{ audio: 'hey', drawing: 'hey', next: 'keypad' }
+];
+let dialog;
+let currentDialog = 0;
+let voice; /* init with tap */
+
+function nextDialog() {
+	voice.pause();
+	const dialog = dialogs[currentDialog];
+	if (dialog.next == 'dialog') {
+		currentDialog++;
+		loadDialog();
+		Game.scene = 'dialog';
+
+	} else if (dialog.next == 'keypad') {
+		Game.scene = 'keypad';
+	}
+}
+
+function loadDialog() {
+	dialog.addAnimation(`/drawings/dialogs/${dialogs[currentDialog].drawing}.json`);
+	voice.src = `/audio/${dialogs[currentDialog].audio}.mp3`;
+	voice.play();
+}
+
 function start() {
 	let x = 32, y = 10;
-	for (let i = 0; i < Keypad.files.length; i++) {
-		const k = Keypad.files[i];
-		Keypad.sprites[k] = new Sprite(x, y);
-		Keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
+	for (let i = 0; i < keypad.files.length; i++) {
+		const k = keypad.files[i];
+		keypad.sprites[k] = new Sprite(x, y);
+		keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
 		x += 48;
 		if (x > Game.width - 64) {
 			x = 32;
@@ -126,15 +167,23 @@ function start() {
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('/drawings/ui/tap.json');
+
+	dialog = new Sprite(0, 0);
 }
 
 function draw() {
-	if (Game.scene == 'tap') {
-		tap.display();
-	} else if (Game.scene == 'keypad') {
-		for (const k in Keypad.sprites) {
-			Keypad.sprites[k].display();
-		}
+	switch (Game.scene) {
+		case 'tap':
+			tap.display();
+		break;
+		case 'dialog':
+			dialog.display();
+		break;
+		case 'keypad':
+			for (const k in keypad.sprites) {
+				keypad.sprites[k].display();
+			}
+		break;
 	}
 }
 
@@ -146,9 +195,13 @@ function tapStart(ev) {
 function tapEnd(ev) {
 	switch (Game.scene) {
 		case 'tap':
+			voice = new Audio();
+			voice.loop = true;
 			if (tap.tap(lastTouch.clientX, lastTouch.clientY)) {
 				tap.focus(() => {
-					Game.scene = 'intro';
+					Game.scene = 'dialog';
+					animate();
+					loadDialog();
 				});
 			}
 		break;
