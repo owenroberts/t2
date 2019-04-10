@@ -114,10 +114,10 @@ function animate() {
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
 
-		if (Game.scene == 'dialog' && currentDialog == 0) {
+		if (Game.scene == 'dialog' && dialogs.current == 'hey') {
 			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
 			const intersects = raycaster.intersectObjects( scene.children, true );
-			if (intersects.length) dialogs[currentDialog].ready[3] = true;
+			if (intersects.length) dialogs[dialogs.current].ready[3] = true;
 		}
 	}
 }
@@ -125,7 +125,7 @@ function animate() {
 /* lines */
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap;
+let tap, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
 	this.fSpeed = speed; // bigger is faster 
 	const limit = speed * 4;
@@ -144,51 +144,64 @@ Sprite.prototype.focus = function(speed, callback) {
 
 /* dialogs */
  // ready / needs : [ drawing, voice, keypad, raycast ]
-const dialogs = [
-	{ audio: 'hey', drawing: 'hey', next: 'dialog', ready: [false, false, true, false], delay: 1000 },
-	{ audio: 'help', drawing: 'help', next: 'dialog', ready: [false, false, true, true], delay: 2000 },
-	{ audio: 'password', drawing: 'password', next: 'keypad', ready: [false, false, true, true], delay: 2000 }
-];
+const dialogs = {
+	order: ['hey', 'help', 'password', 'trybutt'],
+	current: 'hey',
+	hey: { next: 'dialog', ready: [false, false, true, false], delay: 0 },
+	help: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
+	password: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	trybutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 }
+};
 let dialogSprite;
-let currentDialog = 0;
 let voice; /* init with tap */
+
+function next() {
+	const dialog = dialogs[dialogs.current];
+	if (dialog.next == 'dialog') nextDialog();
+	Game.scene = dialog.next;
+}
 
 function nextDialog() {
 	voice.pause();
-	const dialog = dialogs[currentDialog];
-	if (dialog.next == 'dialog') {
-		currentDialog++;
-		loadDialog();
-		Game.scene = 'dialog';
-
-	} else if (dialog.next == 'keypad') {
-		Game.scene = 'keypad';
-	}
+	dialogs.current = dialogs.order[dialogs.order.indexOf(dialogs.current) + 1];
+	loadDialog();
 }
 
 function loadDialog() {
-	const dialog = dialogs[currentDialog];
+	Game.scene = 'dialog';
+	const dialog = dialogs[dialogs.current];
 	dialogSprite.resetSize();
-	dialogSprite.addAnimation(`/drawings/dialogs/${dialog.drawing}.json`, () => {
+	dialogSprite.addAnimation(`/drawings/dialogs/${dialogs.current}.json`, () => {
 		dialogSprite.animation.onPlayedState = function() {
 			dialog.ready[0] = true;
 		};
 	});
-	voice.src = `/audio/${dialog.audio}.mp3`;
-	function voiceEnd() {
-		dialog.ready[1] = true;
-		toad.playAnimation('wave');
-		voice.removeEventListener('ended', voiceEnd);
-	}
+	voice.src = `/audio/${dialogs.current}.mp3`;
 	voice.addEventListener('ended', voiceEnd);
 	voice.play();
 	toad.playAnimation('wavetalk');
 }
 
+function voiceEnd() {
+	dialogs[dialogs.current].ready[1] = true;
+	toad.playAnimation('wave');
+	voice.removeEventListener('ended', voiceEnd);
+}
+
+function replayDialog() {
+	dialogs[dialogs.current].played = false;
+	dialogs[dialogs.current].ready = [false, false, true, true];
+	voice.play();
+	voice.addEventListener('ended', voiceEnd);
+	toad.playAnimation('wavetalk');
+	dialogSprite.animation.setState('default'); // play from beginning
+	Game.scene = 'dialog';
+}
+
 function start() {
-	const o = 6;
-	const c = Math.floor(width/56);
-	const w = width / c;
+	const o = 6; // random offset
+	const c = Math.floor(width/56); // columns
+	const w = width / c; // column width
 	let x = 0, y = 10;
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
@@ -198,13 +211,12 @@ function start() {
 		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
 		keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
 		x += w;
-		if (x > Game.width - w) {
-			x = 0;
-			y += 68;
-		}
+		if (x > Game.width - w) x = 0, y += 68;
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('/drawings/ui/tap.json');
+	passwordSprite = new Sprite(0, height - 64);
+	passwordSprite.addAnimation('/drawings/ui/password.json');
 	dialogSprite = new Sprite(0, 0);
 }
 
@@ -214,14 +226,17 @@ function draw() {
 			tap.display();
 		break;
 		case 'dialog':
+			
 			dialogSprite.display();
 			/* check current dialog */
-			if (dialogs[currentDialog].ready.every(e => { return e; }) && !dialogs[currentDialog].played) {
-				dialogs[currentDialog].played = true;
-				setTimeout(nextDialog, dialogs[currentDialog].delay);
+			const dialog = dialogs[dialogs.current];
+			if (dialog.ready.every(e => { return e; }) && !dialog.played) {
+				dialog.played = true;
+				setTimeout(next, dialog.delay);
 			}
 		break;
 		case 'keypad':
+			passwordSprite.display();
 			for (const k in keypad.sprites) {
 				keypad.sprites[k].display();
 			}
@@ -242,7 +257,7 @@ function tapEnd(ev) {
 			// voice.loop = true;
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
 				tap.focus(4, () => {
-					Game.scene = 'keypad';
+					Game.scene = 'dialog';
 					animate();
 					loadDialog();
 				});
@@ -252,9 +267,22 @@ function tapEnd(ev) {
 			for (const k in keypad.sprites) {
 				const key =  keypad.sprites[k];
 				if (key.tap(lastTouch.x, lastTouch.y)) {
-					console.log(k);
 					key.focus(2);
+					password += k;
 				}
+			}
+			if (passwordSprite.tap(lastTouch.x, lastTouch.y)) {
+				passwordSprite.focus(3, () => {
+					switch (dialogs.current) {
+						case 'trybutt':
+							if (password == 'butt') nextDialog();
+							else replayDialog();
+						break;
+						default:
+							nextDialog();
+					}
+					password = '';
+				});
 			}
 		break;
 	}
