@@ -150,52 +150,47 @@ const dialogs = {
 	hey: { next: 'dialog', ready: [false, false, true, false], delay: 0 },
 	help: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
 	password: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	trybutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 }
+	trybutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	next: function() {
+		const dialog = this[this.current];
+		if (dialog.next) this.nextDialog();
+		Game.scene = dialog.next;
+		console.log(Game.scene);
+	},
+	nextDialog: function() {
+		voice.pause();
+		this.current = this.order[this.order.indexOf(this.current) + 1];
+		this.load();
+	},
+	load: function() {
+		const dialog = this[this.current];
+		this.sprite.resetSize();
+		this.sprite.addAnimation(`/drawings/dialogs/${this.current}.json`, () => {
+			this.sprite.animation.onPlayedState = function() {
+				dialog.ready[0] = true;
+			};
+		});
+		voice.src = `/audio/${this.current}.mp3`;
+		this.play();
+	},
+	play: function() {
+		Game.scene = 'dialog';
+		voice.addEventListener('ended', voiceEnd);
+		voice.play();
+		toad.playAnimation('wavetalk');
+	},
+	replay: function() {
+		this[this.current].played = false;
+		this[this.current].ready = [false, false, true, true];
+		this.sprite.animation.setState('default'); // play from beginning
+		this.play();
+	}
 };
-let dialogSprite;
 let voice; /* init with tap */
-
-function next() {
-	const dialog = dialogs[dialogs.current];
-	if (dialog.next == 'dialog') nextDialog();
-	Game.scene = dialog.next;
-}
-
-function nextDialog() {
-	voice.pause();
-	dialogs.current = dialogs.order[dialogs.order.indexOf(dialogs.current) + 1];
-	loadDialog();
-}
-
-function loadDialog() {
-	Game.scene = 'dialog';
-	const dialog = dialogs[dialogs.current];
-	dialogSprite.resetSize();
-	dialogSprite.addAnimation(`/drawings/dialogs/${dialogs.current}.json`, () => {
-		dialogSprite.animation.onPlayedState = function() {
-			dialog.ready[0] = true;
-		};
-	});
-	voice.src = `/audio/${dialogs.current}.mp3`;
-	voice.addEventListener('ended', voiceEnd);
-	voice.play();
-	toad.playAnimation('wavetalk');
-}
-
 function voiceEnd() {
 	dialogs[dialogs.current].ready[1] = true;
 	toad.playAnimation('wave');
 	voice.removeEventListener('ended', voiceEnd);
-}
-
-function replayDialog() {
-	dialogs[dialogs.current].played = false;
-	dialogs[dialogs.current].ready = [false, false, true, true];
-	voice.play();
-	voice.addEventListener('ended', voiceEnd);
-	toad.playAnimation('wavetalk');
-	dialogSprite.animation.setState('default'); // play from beginning
-	Game.scene = 'dialog';
 }
 
 function start() {
@@ -217,7 +212,7 @@ function start() {
 	tap.addAnimation('/drawings/ui/tap.json');
 	passwordSprite = new Sprite(0, height - 64);
 	passwordSprite.addAnimation('/drawings/ui/password.json');
-	dialogSprite = new Sprite(0, 0);
+	dialogs.sprite = new Sprite(0, 0);
 }
 
 function draw() {
@@ -226,13 +221,12 @@ function draw() {
 			tap.display();
 		break;
 		case 'dialog':
-			
-			dialogSprite.display();
+			dialogs.sprite.display();
 			/* check current dialog */
 			const dialog = dialogs[dialogs.current];
 			if (dialog.ready.every(e => { return e; }) && !dialog.played) {
 				dialog.played = true;
-				setTimeout(next, dialog.delay);
+				setTimeout(dialogs.next.bind(dialogs), dialog.delay);
 			}
 		break;
 		case 'keypad':
@@ -259,7 +253,7 @@ function tapEnd(ev) {
 				tap.focus(4, () => {
 					Game.scene = 'dialog';
 					animate();
-					loadDialog();
+					dialogs.load();
 				});
 			}
 		break;
@@ -275,11 +269,11 @@ function tapEnd(ev) {
 				passwordSprite.focus(3, () => {
 					switch (dialogs.current) {
 						case 'trybutt':
-							if (password == 'butt') nextDialog();
-							else replayDialog();
+							if (password == 'butt') dialogs.next();
+							else dialogs.replay();
 						break;
 						default:
-							nextDialog();
+							dialogs.nextDialog();
 					}
 					password = '';
 				});
