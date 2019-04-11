@@ -174,12 +174,12 @@ const dialogs = {
 	load: function() {
 		const dialog = this[this.current];
 		this.sprite.resetSize();
-		this.sprite.addAnimation(`/drawings/dialogs/${this.current}.json`, () => {
+		this.sprite.addAnimation(`./drawings/dialogs/${this.current}.json`, () => {
 			this.sprite.animation.onPlayedState = function() {
 				dialog.ready[0] = true;
 			};
 		});
-		voice.src = `/audio/${this.current}.mp3`;
+		voice.src = `./audio/${this.current}.mp3`;
 		this.play();
 	},
 	play: function() {
