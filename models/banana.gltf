@@ -1,0 +1,178 @@
+{
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5123,
+            "count" : 1716,
+            "max" : [
+                1127
+            ],
+            "min" : [
+                0
+            ],
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 1128,
+            "max" : [
+                0.9999831914901733,
+                1.000000238418579,
+                4.864985466003418
+            ],
+            "min" : [
+                -3.5784831047058105,
+                -1.0000001192092896,
+                -4.810101509094238
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 1128,
+            "max" : [
+                0.970740556716919,
+                0.9658265709877014,
+                0.9792254567146301
+            ],
+            "min" : [
+                -0.9641526937484741,
+                -0.9658263325691223,
+                -0.9753323793411255
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 1128,
+            "max" : [
+                1.0034364461898804,
+                1.0038009081035852
+            ],
+            "min" : [
+                0.0034433575347065926,
+                -0.01068878173828125
+            ],
+            "type" : "VEC2"
+        }
+    ],
+    "asset" : {
+        "generator" : "Khronos Blender glTF 2.0 exporter",
+        "version" : "2.0"
+    },
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 3432,
+            "byteOffset" : 0,
+            "target" : 34963
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 13536,
+            "byteOffset" : 3432,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 13536,
+            "byteOffset" : 16968,
+            "target" : 34962
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9024,
+            "byteOffset" : 30504,
+            "target" : 34962
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 39528,
+            "uri" : "banana.bin"
+        }
+    ],
+    "extensionsUsed" : [
+        "KHR_materials_unlit"
+    ],
+    "images" : [
+        {
+            "name" : "banana-08",
+            "uri" : "banana-08.png"
+        }
+    ],
+    "materials" : [
+        {
+            "extensions" : {
+                "KHR_materials_unlit" : {}
+            },
+            "name" : "Banana",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.640000066757203,
+                    0.5279581148618178,
+                    0.010473074920074266,
+                    1.0
+                ],
+                "baseColorTexture" : {
+                    "index" : 0
+                },
+                "metallicFactor" : 0.0,
+                "roughnessFactor" : 0.9
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Circle",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "NORMAL" : 2,
+                        "POSITION" : 1,
+                        "TEXCOORD_0" : 3
+                    },
+                    "indices" : 0,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Banana",
+            "scale" : [
+                1.0300875902175903,
+                1.0300875902175903,
+                1.0300875902175903
+            ],
+            "translation" : [
+                0.13165058195590973,
+                -1.3254681796581735e-09,
+                -0.24054664373397827
+            ]
+        }
+    ],
+    "samplers" : [
+        {}
+    ],
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "textures" : [
+        {
+            "sampler" : 0,
+            "source" : 0
+        }
+    ]
+}

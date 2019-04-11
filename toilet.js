@@ -25,7 +25,7 @@ const interval = 1000 / 30;
 let width = window.innerWidth, height = window.innerHeight;
 let camera, scene, renderer, controls;
 let clock, mixer;
-let toad, toilet;
+let toad, toilet, banana, bananas = [];
 let raycaster;
 const vector = new THREE.Vector3();
 
@@ -97,6 +97,10 @@ function init() {
 		scene.add( toad );
 	});
 
+	loader.load('models/banana.gltf', gltf => {
+		banana = gltf;
+	});
+
 	/* test cube
 	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
@@ -105,9 +109,33 @@ function init() {
 	// scene.add( testCube );
 }
 
+function makeBananas() {
+	const n = Cool.random(10, 20);
+	for (let i = 0; i < n; i++) {
+		const b = cloneGltf( banana ).scene;
+		b.scale.set( 0.1, 0.1, 0.1 );
+		bananas.push( b );
+		scene.add( b );
+	}
+}
+
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
+
+		// animate bananas
+		for (let i = 0; i < bananas.length; i++) {
+			if (bananas[i]) {
+				bananas[i].rotation.x += 0.01;
+				bananas[i].rotation.z += 0.01;
+				bananas[i].position.y += 0.01;
+				if (bananas[i].position.y < -2) {
+					scene.remove( bananas[i] );
+					bananas.splice( i, 1 );
+				}
+			}
+		}
+
 		timer = performance.now();
 		controls.update();
 		mixer.update( clock.getDelta() );
@@ -160,7 +188,8 @@ const dialogs = {
 	fartville: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
 	alone: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
 	spring: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	characters: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	characters: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
+	banana: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
 	next: function() {
 		const dialog = this[this.current];
 		if (dialog.next == 'dialog') this.nextDialog();
@@ -174,12 +203,12 @@ const dialogs = {
 	load: function() {
 		const dialog = this[this.current];
 		this.sprite.resetSize();
-		this.sprite.addAnimation(`./drawings/dialogs/${this.current}.json`, () => {
+		this.sprite.addAnimation(`drawings/dialogs/${this.current}.json`, () => {
 			this.sprite.animation.onPlayedState = function() {
 				dialog.ready[0] = true;
 			};
 		});
-		voice.src = `./audio/${this.current}.mp3`;
+		voice.src = `audio/${this.current}.mp3`;
 		this.play();
 	},
 	play: function() {
@@ -219,7 +248,7 @@ function start() {
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('/drawings/ui/tap.json');
-	passwordSprite = new Sprite(0, height - 68);
+	passwordSprite = new Sprite(0, height - 80);
 	passwordSprite.addAnimation('/drawings/ui/password.json');
 	dialogs.sprite = new Sprite(0, 0);
 }
@@ -279,6 +308,10 @@ function tapEnd(ev) {
 					switch (dialogs.current) {
 						case 'trybutt':
 							if (password == 'butt') dialogs.nextDialog();
+							else dialogs.replay();
+						break;
+						case 'banana':
+							if (password == 'banana') makeBananas();
 							else dialogs.replay();
 						break;
 						default:
