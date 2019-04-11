@@ -145,17 +145,26 @@ Sprite.prototype.focus = function(speed, callback) {
 /* dialogs */
  // ready / needs : [ drawing, voice, keypad, raycast ]
 const dialogs = {
-	order: ['hey', 'help', 'password', 'trybutt'],
+	order: ['hey', 'help', 'password', 'trybutt', 'littlebutt',  'town', 'cousin', 'dog', 'cat', 'gm', 'fartville', 'alone', 'spring', 'gm', 'characters'],
 	current: 'hey',
 	hey: { next: 'dialog', ready: [false, false, true, false], delay: 0 },
 	help: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
 	password: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
 	trybutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	littlebutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	town: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	cousin: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	dog: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	cat: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	gm: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	fartville: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	alone: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	spring: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
+	characters: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
 	next: function() {
 		const dialog = this[this.current];
-		if (dialog.next) this.nextDialog();
+		if (dialog.next == 'dialog') this.nextDialog();
 		Game.scene = dialog.next;
-		console.log(Game.scene);
 	},
 	nextDialog: function() {
 		voice.pause();
@@ -210,7 +219,7 @@ function start() {
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('/drawings/ui/tap.json');
-	passwordSprite = new Sprite(0, height - 64);
+	passwordSprite = new Sprite(0, height - 68);
 	passwordSprite.addAnimation('/drawings/ui/password.json');
 	dialogs.sprite = new Sprite(0, 0);
 }
@@ -269,7 +278,7 @@ function tapEnd(ev) {
 				passwordSprite.focus(3, () => {
 					switch (dialogs.current) {
 						case 'trybutt':
-							if (password == 'butt') dialogs.next();
+							if (password == 'butt') dialogs.nextDialog();
 							else dialogs.replay();
 						break;
 						default:
