@@ -98,12 +98,6 @@
     "extensionsUsed" : [
         "KHR_materials_unlit"
     ],
-    "images" : [
-        {
-            "name" : "banana-08",
-            "uri" : "banana-08.png"
-        }
-    ],
     "materials" : [
         {
             "extensions" : {
@@ -117,9 +111,6 @@
                     0.010473074920074266,
                     1.0
                 ],
-                "baseColorTexture" : {
-                    "index" : 0
-                },
                 "metallicFactor" : 0.0,
                 "roughnessFactor" : 0.9
             }
@@ -157,9 +148,6 @@
             ]
         }
     ],
-    "samplers" : [
-        {}
-    ],
     "scene" : 0,
     "scenes" : [
         {
@@ -167,12 +155,6 @@
             "nodes" : [
                 0
             ]
-        }
-    ],
-    "textures" : [
-        {
-            "sampler" : 0,
-            "source" : 0
         }
     ]
 }

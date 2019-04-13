@@ -110,10 +110,11 @@ function init() {
 }
 
 function makeBananas() {
-	const n = Cool.random(10, 20);
+	const n = Cool.random(50, 100);
 	for (let i = 0; i < n; i++) {
 		const b = cloneGltf( banana ).scene;
-		b.scale.set( 0.1, 0.1, 0.1 );
+		b.position.set( Cool.random(-1, 1), Cool.random(4, 20), Cool.random(-3, -1) );
+		b.scale.set( 0.05, 0.05, 0.05 );
 		bananas.push( b );
 		scene.add( b );
 	}
@@ -122,13 +123,12 @@ function makeBananas() {
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
-
 		// animate bananas
 		for (let i = 0; i < bananas.length; i++) {
 			if (bananas[i]) {
-				bananas[i].rotation.x += 0.01;
-				bananas[i].rotation.z += 0.01;
-				bananas[i].position.y += 0.01;
+				bananas[i].rotation.x += Cool.random(0.25);
+				bananas[i].rotation.z += Cool.random(0.25);
+				bananas[i].position.y -= 0.05;
 				if (bananas[i].position.y < -2) {
 					scene.remove( bananas[i] );
 					bananas.splice( i, 1 );
@@ -173,7 +173,7 @@ Sprite.prototype.focus = function(speed, callback) {
 /* dialogs */
  // ready / needs : [ drawing, voice, keypad, raycast ]
 const dialogs = {
-	order: ['hey', 'help', 'password', 'trybutt', 'littlebutt',  'town', 'cousin', 'dog', 'cat', 'gm', 'fartville', 'alone', 'spring', 'gm', 'characters'],
+	order: ['hey', 'help', 'password', 'trybutt', 'littlebutt',  'town', 'cousin', 'dog', 'cat', 'gm', 'fartville', 'alone', 'spring', 'characters', 'banana'],
 	current: 'hey',
 	hey: { next: 'dialog', ready: [false, false, true, false], delay: 0 },
 	help: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
@@ -242,14 +242,14 @@ function start() {
 		const k = keys[index];
 		keys.splice(index, 1);
 		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
-		keypad.sprites[k].addAnimation(`/drawings/keypad/${k}.json`);
+		keypad.sprites[k].addAnimation(`drawings/keypad/${k}.json`);
 		x += w;
 		if (x > Game.width - w) x = 0, y += 68;
 	}
 	tap = new Sprite(0, 0);
-	tap.addAnimation('/drawings/ui/tap.json');
+	tap.addAnimation('drawings/ui/tap.json');
 	passwordSprite = new Sprite(0, height - 80);
-	passwordSprite.addAnimation('/drawings/ui/password.json');
+	passwordSprite.addAnimation('drawings/ui/password.json');
 	dialogs.sprite = new Sprite(0, 0);
 }
 
@@ -292,6 +292,7 @@ function tapEnd(ev) {
 					Game.scene = 'dialog';
 					animate();
 					dialogs.load();
+					// makeBananas();
 				});
 			}
 		break;
@@ -311,7 +312,10 @@ function tapEnd(ev) {
 							else dialogs.replay();
 						break;
 						case 'banana':
-							if (password == 'banana') makeBananas();
+							if (password == 'banana') {
+								makeBananas();
+								dialogs.nextDialog();
+							}
 							else dialogs.replay();
 						break;
 						default:
