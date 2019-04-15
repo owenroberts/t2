@@ -2,23 +2,28 @@
 function onMotion(ev) {
 	window.removeEventListener('devicemotion', onMotion, false);
 	if (ev.acceleration.x != null || ev.accelerationIncludingGravity.x != null) {
-		document.getElementById('desktop').remove();
-		init();
-		Game.init({
-			width: window.innerWidth, 
-			height: window.innerHeight, 
-			lps: 10, 
-			stats: false,
-			debug: false,
-			mixedColors: false
-		});
-		Game.scene = 'tap';
-		Game.ctx.strokeStyle = "#fff";
+		motionGo();
 	}
 }
 window.addEventListener('devicemotion', onMotion, false);
 if (document.getElementById('desktop'))
-	document.getElementById('desktop').style.opacity = 1; 
+	document.getElementById('desktop').style.opacity = 1;
+
+function motionGo() {
+	document.getElementById('desktop').remove();
+	init();
+	Game.init({
+		width: window.innerWidth, 
+		height: window.innerHeight, 
+		lps: 10, 
+		stats: false,
+		debug: false,
+		mixedColors: false
+	});
+	Game.scene = 'tap';
+	Game.ctx.strokeStyle = "#fff";
+}
+
 
 let timer = performance.now();
 const interval = 1000 / 30;
@@ -34,10 +39,17 @@ const vector = new THREE.Vector3();
 const outlineColor = 0xFFFFFF;
 const bgColor = 0x0d0d26;
 
+
 function init() {
 	clock = new THREE.Clock();
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( bgColor );
+
+	// change orientation for android
+	if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
+		scene.rotation.set( 0, -Math.PI/2, 0 );
+		scene.position.set( -1, 0, -1);
+	}
 
 	renderer = new THREE.WebGLRenderer();
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -329,6 +341,9 @@ function tapEnd(ev) {
 }
 window.addEventListener('touchstart', tapStart);
 window.addEventListener('touchend', tapEnd);
+
+
+// motionGo(); // run in browser
 	
 /* boring */
 function onWindowResize() { 
