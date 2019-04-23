@@ -245,10 +245,9 @@ function voiceEnd() {
 
 function start() {
 	const o = 6; // random offset
-	const c = Math.floor(width/48); // columns
+	const c = Math.floor(width/56); // columns
 	const w = width / c; // column width
 	let x = 0, y = 10;
-	console.log(w)
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
 		const index = Cool.randomInt(keys.length - 1);
@@ -257,7 +256,7 @@ function start() {
 		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
 		keypad.sprites[k].addAnimation(`drawings/keypad/${k}.json`);
 		x += w;
-		if (x > Game.width - w) x = 0, y += w;
+		if (x > Game.width - w) x = 0, y += 68;
 	}
 	tap = new Sprite(0, 0);
 	tap.addAnimation('drawings/ui/tap.json');
