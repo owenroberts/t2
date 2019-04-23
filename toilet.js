@@ -39,7 +39,6 @@ const vector = new THREE.Vector3();
 const outlineColor = 0xFFFFFF;
 const bgColor = 0x0d0d26;
 
-
 function init() {
 	clock = new THREE.Clock();
 	scene = new THREE.Scene();
@@ -216,6 +215,7 @@ const dialogs = {
 		const dialog = this[this.current];
 		this.sprite.resetSize();
 		this.sprite.addAnimation(`drawings/dialogs/${this.current}.json`, () => {
+			this.sprite.fit(Game.width);
 			this.sprite.animation.onPlayedState = function() {
 				dialog.ready[0] = true;
 			};
@@ -248,7 +248,6 @@ function start() {
 	const c = Math.floor(width/48); // columns
 	const w = width / c; // column width
 	const h = w + 6;
-	console.log(w);
 	let x = 0, y = 10;
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
@@ -261,9 +260,13 @@ function start() {
 		if (x > Game.width - w) x = 0, y += h;
 	}
 	tap = new Sprite(0, 0);
-	tap.addAnimation('drawings/ui/tap.json');
+	tap.addAnimation('drawings/ui/tap.json', function() {
+		tap.fit(Game.width);
+	});
 	passwordSprite = new Sprite(0, height - 80);
-	passwordSprite.addAnimation('drawings/ui/password.json');
+	passwordSprite.addAnimation('drawings/ui/password.json', function() {
+		passwordSprite.fit(Game.width);
+	});
 	dialogs.sprite = new Sprite(0, 0);
 }
 
