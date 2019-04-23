@@ -48,7 +48,7 @@ function init() {
 	// change orientation for android
 	if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
 		scene.rotation.set( 0, -Math.PI/2, 0 );
-		scene.position.set( -1, 0, -1);
+		scene.position.set( -1, 0, -1 ); // match camera offset
 	}
 
 	renderer = new THREE.WebGLRenderer();
@@ -169,13 +169,13 @@ let tap, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
 	this.fSpeed = speed; // bigger is faster 
 	const limit = speed * 4;
-	this.animation.overrideProperty('jig', 1);
+	this.animation.overrideProperty('r', 1);
 	this.displayFunc = function() {
-		this.animation.jig += this.fSpeed;
-		if (this.animation.jig >= limit) this.fSpeed *= -1;
-		if (this.animation.jig <= 0) {
+		this.animation.over.r += this.fSpeed;
+		if (this.animation.over.r >= limit) this.fSpeed *= -1;
+		if (this.animation.over.r <= 0) {
 			this.fSpeed = 0;
-			this.animation.jig = undefined;
+			this.animation.over.r = undefined;
 			this.displayFunc = undefined;
 			if (callback) callback();
 		}
@@ -339,6 +339,7 @@ function tapEnd(ev) {
 		break;
 	}
 }
+
 window.addEventListener('touchstart', tapStart);
 window.addEventListener('touchend', tapEnd);
 
