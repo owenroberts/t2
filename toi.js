@@ -15,7 +15,7 @@ function motionGo() {
 	Game.init({
 		width: window.innerWidth, 
 		height: window.innerHeight, 
-		lps: 10, 
+		lps: 12, 
 		stats: false,
 		debug: false,
 		mixedColors: false
@@ -23,7 +23,6 @@ function motionGo() {
 	Game.scene = 'tap';
 	Game.ctx.strokeStyle = "#fff";
 }
-
 
 let timer = performance.now();
 const interval = 1000 / 30;
@@ -153,200 +152,13 @@ function animate() {
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
 
-		if (Game.scene == 'dialog' && dialogs.current == 'hey') {
+		if (Game.scene == 'dialog' && dialogs.index == 0 && dialogs.current) {
 			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
 			const intersects = raycaster.intersectObjects( scene.children, true );
-			if (intersects.length) dialogs[dialogs.current].ready[3] = true;
+			if (intersects.length) dialogs.current.ready[2] = true;
 		}
 	}
 }
-
-/* lines */
-const keypad = { sprites: {} };
-keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap, passwordSprite, password = '';
-Sprite.prototype.focus = function(speed, callback) {
-	this.fSpeed = speed; // bigger is faster 
-	const limit = speed * 4;
-	this.animation.overrideProperty('r', 1);
-	this.displayFunc = function() {
-		this.animation.over.r += this.fSpeed;
-		if (this.animation.over.r >= limit) this.fSpeed *= -1;
-		if (this.animation.over.r <= 0) {
-			this.fSpeed = 0;
-			this.animation.over.r = undefined;
-			this.displayFunc = undefined;
-			if (callback) callback();
-		}
-	};
-};
-
-/* dialogs */
- // ready / needs : [ drawing, voice, keypad, raycast ]
-const dialogs = {
-	order: ['hey', 'help', 'password', 'trybutt', 'littlebutt',  'town', 'cousin', 'dog', 'cat', 'gm', 'fartville', 'alone', 'spring', 'characters', 'banana'],
-	current: 'hey',
-	hey: { next: 'dialog', ready: [false, false, true, false], delay: 0 },
-	help: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
-	password: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	trybutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	littlebutt: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	town: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	cousin: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	dog: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	cat: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	gm: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	fartville: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	alone: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	spring: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	characters: { next: 'dialog', ready: [false, false, true, true], delay: 0 },
-	banana: { next: 'keypad', ready: [false, false, true, true], delay: 0 },
-	next: function() {
-		const dialog = this[this.current];
-		if (dialog.next == 'dialog') this.nextDialog();
-		Game.scene = dialog.next;
-	},
-	nextDialog: function() {
-		voice.pause();
-		this.current = this.order[this.order.indexOf(this.current) + 1];
-		this.load();
-	},
-	load: function() {
-		const dialog = this[this.current];
-		this.sprite.resetSize();
-		this.sprite.addAnimation(`drawings/dialogs/${this.current}.json`, () => {
-			this.sprite.fit(Game.width);
-			this.sprite.animation.onPlayedState = function() {
-				dialog.ready[0] = true;
-			};
-		});
-		voice.src = `audio/${this.current}.mp3`;
-		this.play();
-	},
-	play: function() {
-		Game.scene = 'dialog';
-		voice.addEventListener('ended', voiceEnd);
-		voice.play();
-		toad.playAnimation('wavetalk');
-	},
-	replay: function() {
-		this[this.current].played = false;
-		this[this.current].ready = [false, false, true, true];
-		this.sprite.animation.setState('default'); // play from beginning
-		this.play();
-	}
-};
-let voice; /* init with tap */
-function voiceEnd() {
-	dialogs[dialogs.current].ready[1] = true;
-	toad.playAnimation('wave');
-	voice.removeEventListener('ended', voiceEnd);
-}
-
-function start() {
-	const o = 6; // random offset
-	const c = Math.floor(width/48); // columns
-	const w = width / c; // column width
-	const h = w + 6;
-	let x = 0, y = 10;
-	const keys = [...keypad.files];
-	for (let i = 0; i < keypad.files.length; i++) {
-		const index = Cool.randomInt(keys.length - 1);
-		const k = keys[index];
-		keys.splice(index, 1);
-		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
-		keypad.sprites[k].addAnimation(`drawings/keypad/${k}.json`);
-		x += w;
-		if (x > Game.width - w) x = 0, y += h;
-	}
-	tap = new Sprite(0, 0);
-	tap.addAnimation('drawings/ui/tap.json', function() {
-		tap.fit(Game.width);
-	});
-	passwordSprite = new Sprite(0, height - 80);
-	passwordSprite.addAnimation('drawings/ui/password.json', function() {
-		passwordSprite.fit(Game.width);
-	});
-	dialogs.sprite = new Sprite(0, 0);
-}
-
-function draw() {
-	switch (Game.scene) {
-		case 'tap':
-			tap.display();
-		break;
-		case 'dialog':
-			dialogs.sprite.display();
-			/* check current dialog */
-			const dialog = dialogs[dialogs.current];
-			if (dialog.ready.every(e => { return e; }) && !dialog.played) {
-				dialog.played = true;
-				setTimeout(dialogs.next.bind(dialogs), dialog.delay);
-			}
-		break;
-		case 'keypad':
-			passwordSprite.display();
-			for (const k in keypad.sprites) {
-				keypad.sprites[k].display();
-			}
-		break;
-	}
-}
-
-/* events */
-let lastTouch;
-function tapStart(ev) {
-	lastTouch = { x: ev.touches[0].clientX, y: ev.touches[0].clientY };
-}
-
-function tapEnd(ev) {
-	switch (Game.scene) {
-		case 'tap':
-			voice = new Audio();
-			// voice.loop = true;
-			if (tap.tap(lastTouch.x, lastTouch.y)) {
-				tap.focus(4, () => {
-					Game.scene = 'dialog';
-					animate();
-					dialogs.load();
-					// makeBananas();
-				});
-			}
-		break;
-		case 'keypad':
-			for (const k in keypad.sprites) {
-				const key =  keypad.sprites[k];
-				if (key.tap(lastTouch.x, lastTouch.y)) {
-					key.focus(2);
-					password += k;
-				}
-			}
-			if (passwordSprite.tap(lastTouch.x, lastTouch.y)) {
-				passwordSprite.focus(3, () => {
-					switch (dialogs.current) {
-						case 'trybutt':
-							if (password == 'butt') dialogs.nextDialog();
-							else dialogs.replay();
-						break;
-						case 'banana':
-							if (password == 'banana') {
-								makeBananas();
-								dialogs.nextDialog();
-							}
-							else dialogs.replay();
-						break;
-						default:
-							dialogs.nextDialog();
-					}
-					password = '';
-				});
-			}
-		break;
-	}
-}
-
-window.addEventListener('touchstart', tapStart);
-window.addEventListener('touchend', tapEnd);
 
 
 // motionGo(); // run in browser
