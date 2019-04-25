@@ -3,14 +3,13 @@ const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
 let tap, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
-	this.fSpeed = speed; // bigger is faster 
 	const limit = speed * 4;
 	this.animation.overrideProperty('r', 1);
 	this.displayFunc = function() {
-		this.animation.over.r += this.fSpeed;
-		if (this.animation.over.r >= limit) this.fSpeed *= -1;
+		this.animation.over.r += speed;
+		if (this.animation.over.r >= limit) speed *= -1;
 		if (this.animation.over.r <= 0) {
-			this.fSpeed = 0;
+			speed = 0;
 			this.animation.over.r = undefined;
 			this.displayFunc = undefined;
 			if (callback) callback();
@@ -70,7 +69,7 @@ const dialogs = {
 		Game.scene = 'dialog';
 		voice.addEventListener('ended', voiceEnd);
 		voice.play();
-		toad.playAnimation('wavetalk');
+		toad.playAnimation('Wave+Talk');
 		this.sprite.animation.setFrame(0); // play from beginning
 	},
 	replay: function() {
@@ -84,7 +83,7 @@ const dialogs = {
 let voice; /* init with tap */
 function voiceEnd() {
 	dialogs.current.ready[1] = true;
-	toad.playAnimation('wave');
+	toad.playAnimation('Wave');
 	voice.removeEventListener('ended', voiceEnd);
 }
 

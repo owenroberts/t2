@@ -89,21 +89,21 @@ function init() {
 	loader.load("models/toad.gltf", gltf => {
 		toad = gltf.scene;
 		toad.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
-		// toad.traverse(o => { if (o.material) console.log(o, o.material.color) });
-		toad.animations = {
-			wavetalk: gltf.animations[0],
-			wave: gltf.animations[1]
-		};
+		toad.animations = {};
+		for (let i = 0; i < gltf.animations.length; i++) {
+			const anim = gltf.animations[i];
+			toad.animations[anim.name] = anim;
+		}
 		toad.rotation.y = Math.PI;
 		toad.scale.set( 0.06, 0.06, 0.06 );
 		toad.position.set( 0, -0.3, -0.4 );
-		toad.animations.current = 'wave';
+		toad.animations.current = 'Wave';
 		toad.playAnimation = function(label) {
 			mixer.clipAction( toad.animations[toad.animations.current], toad ).stop();
 			mixer.clipAction( toad.animations[label], toad ).play();
 			toad.animations.current = label;
 		};
-		mixer.clipAction( toad.animations.wave, toad ).play();
+		mixer.clipAction( toad.animations['Wave'], toad ).play();
 		scene.add( toad );
 	});
 
@@ -159,8 +159,6 @@ function animate() {
 		}
 	}
 }
-
-
 // motionGo(); // run in browser
 	
 /* boring */
