@@ -19,14 +19,14 @@ Sprite.prototype.focus = function(speed, callback) {
 
 /* dialogs */
  // ready / needs : [ drawing, voice,  raycast ]
-const dialogs = {
+const dlgs = {
 	index: 0,
 	list: [
 		{ file: "hey", next: 'dialog', ready: [false, false, false], delay: 0 },
 		{ file: "help", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "password", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "notit", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "inside", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "colon", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "trybutt", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "littlebutt", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "either", next: 'dialog', ready: [false, false, true], delay: 0 },
@@ -36,55 +36,61 @@ const dialogs = {
 		{ file: "cousin", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "dog", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "cat", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "gm", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "fartville", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "alone", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "spring", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "characters", next: 'dialog', ready: [false, false, true], delay: 0 },
+		// { file: "gm", next: 'keypad', ready: [false, false, true], delay: 0 },
+		// { file: "fartville", next: 'keypad', ready: [false, false, true], delay: 0 },
+		// { file: "alone", next: 'keypad', ready: [false, false, true], delay: 0 },
+		// { file: "spring", next: 'keypad', ready: [false, false, true], delay: 0 },
+		// { file: "characters", next: 'dialog', ready: [false, false, true], delay: 0 },
+
+		{ file: "alone", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "silent", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "try_alone", next: 'dialog', ready: [false, false, true], delay: 0 },
+
+
 		{ file: "banana", next: 'keypad', ready: [false, false, true], delay: 0 }
 	],
 	next: function() {
-		Game.scene = this.current.next;
-		if (this.current.next == 'dialog') this.nextDialog();
+		Game.scene = dlgs.current.next;
+		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
+		else if (dlgs.current.next == 'keypad') toad.playAnimation('Jump');
 	},
 	nextDialog: function() {
 		voice.pause();
-		this.index++;
+		dlgs.index++;
 		// this.current = { ...this.list[this.index] }; // clone
-		this.load();
+		dlgs.load();
 	},
 	load: function() {
-		this.sprite.resetSize();
-		this.current = JSON.parse(JSON.stringify(this.list[this.index]));
-		this.sprite.addAnimation(`drawings/dialogs/${this.current.file}.json`, () => {
-			this.sprite.fit(Game.width);
-			this.sprite.animation.onPlayedState = function() {
-				dialogs.current.ready[0] = true;
+		dlgs.sprite.resetSize();
+		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
+		dlgs.sprite.addAnimation(`drawings/dialogs/${this.current.file}.json`, () => {
+			dlgs.sprite.fit(Game.width);
+			dlgs.sprite.animation.onPlayedState = function() {
+				dlgs.current.ready[0] = true;
 			};
 		});
-		voice.src = `audio/${this.current.file}.mp3`;
-		this.play();
+		voice.src = `audio/${dlgs.current.file}.mp3`;
+		// voice.addEventListener('loadeddata', function() { });
+		dlgs.play();
 	},
 	play: function() {
 		Game.scene = 'dialog';
-		voice.addEventListener('ended', voiceEnd);
 		voice.play();
 		toad.playAnimation('Wave+Talk');
-		this.sprite.animation.setFrame(0); // play from beginning
+		dlgs.sprite.animation.setFrame(0); // play from beginning
 	},
 	replay: function() {
-		this.current = JSON.parse(JSON.stringify(this.list[this.index]));
-		this.play();
+		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
+		dlgs.play();
 	},
 	isReady: function() {
-		return this.current.ready.every(e => { return e; });
+		return dlgs.current.ready.every(e => { return e; });
 	}
 };
 let voice; /* init with tap */
 function voiceEnd() {
-	dialogs.current.ready[1] = true;
+	dlgs.current.ready[1] = true;
 	toad.playAnimation('Wave');
-	voice.removeEventListener('ended', voiceEnd);
 }
 
 function start() {
@@ -111,7 +117,7 @@ function start() {
 	passwordSprite.addAnimation('drawings/ui/password.json', function() {
 		passwordSprite.fit(Game.width);
 	});
-	dialogs.sprite = new Sprite(0, 0);
+	dlgs.sprite = new Sprite(0, 0);
 	// dialogs.sprite.debug = true;
 }
 
@@ -121,12 +127,12 @@ function draw() {
 			tap.display();
 		break;
 		case 'dialog':
-			dialogs.sprite.display();
+			dlgs.sprite.display();
 			/* check current dialog */
-			if (dialogs.isReady() && !dialogs.current.played) {
-				dialogs.current.played = true;
+			if (dlgs.isReady() && !dlgs.current.played) {
+				dlgs.current.played = true;
 				// setTimeout(dialogs.next.bind(dialogs), dialogs.current.delay);
-				dialogs.next();
+				dlgs.next();
 				/* counter ? */
 			}
 		break;
@@ -149,12 +155,12 @@ function tapEnd(ev) {
 	switch (Game.scene) {
 		case 'tap':
 			voice = new Audio();
-			// voice.loop = true;
+			voice.addEventListener('ended', voiceEnd);
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
 				tap.focus(4, () => {
 					Game.scene = 'dialog';
 					animate();
-					dialogs.load();
+					dlgs.load();
 					// makeBananas();
 				});
 			}
@@ -169,20 +175,20 @@ function tapEnd(ev) {
 			}
 			if (passwordSprite.tap(lastTouch.x, lastTouch.y)) {
 				passwordSprite.focus(3, () => {
-					switch (dialogs.current.file) {
+					switch (dlgs.current.file) {
 						case 'trybutt':
-							if (password == 'butt') dialogs.nextDialog();
-							else dialogs.replay();
+							if (password == 'butt') dlgs.nextDialog();
+							else dlgs.replay();
 						break;
 						case 'banana':
 							if (password == 'banana') {
 								makeBananas();
-								dialogs.nextDialog();
+								dlgs.nextDialog();
 							}
-							else dialogs.replay();
+							else dlgs.replay();
 						break;
 						default:
-							dialogs.nextDialog();
+							dlgs.nextDialog();
 					}
 					password = '';
 				});

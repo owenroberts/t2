@@ -152,10 +152,10 @@ function animate() {
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
 
-		if (Game.scene == 'dialog' && dialogs.index == 0 && dialogs.current) {
+		if (Game.scene == 'dialog' && dlgs.index == 0 && dlgs.current) {
 			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
 			const intersects = raycaster.intersectObjects( scene.children, true );
-			if (intersects.length) dialogs.current.ready[2] = true;
+			if (intersects.length) dlgs.current.ready[2] = true;
 		}
 	}
 }
