@@ -44,7 +44,20 @@ const dlgs = {
 
 		{ file: "alone", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "silent", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "try_alone", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "try_alone", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "real", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "soul", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "flush", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "desperate", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "ride", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "plumbing", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "each", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "time", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "change", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "seasons", next: 'keypad', ready: [false, false, true], delay: 0 },
 
 
 		{ file: "banana", next: 'keypad', ready: [false, false, true], delay: 0 }
@@ -67,6 +80,7 @@ const dlgs = {
 			dlgs.sprite.fit(Game.width);
 			dlgs.sprite.animation.onPlayedState = function() {
 				dlgs.current.ready[0] = true;
+				dlgs.sprite.animation.stop();
 			};
 		});
 		voice.src = `audio/${dlgs.current.file}.mp3`;
@@ -78,6 +92,7 @@ const dlgs = {
 		voice.play();
 		toad.playAnimation('Wave+Talk');
 		dlgs.sprite.animation.setFrame(0); // play from beginning
+		dlgs.sprite.animation.start();
 	},
 	replay: function() {
 		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
