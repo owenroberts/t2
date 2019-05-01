@@ -36,6 +36,7 @@ const dlgs = {
 		{ file: "cousin", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "dog", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "cat", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		// { file: "gm", next: 'keypad', ready: [false, false, true], delay: 0 },
 		// { file: "fartville", next: 'keypad', ready: [false, false, true], delay: 0 },
 		// { file: "alone", next: 'keypad', ready: [false, false, true], delay: 0 },
@@ -59,6 +60,19 @@ const dlgs = {
 		{ file: "change", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "seasons", next: 'keypad', ready: [false, false, true], delay: 0 },
 
+		{ file: "direction", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "reflection", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "leave", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "abandon", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "please", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "try_please", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "dropping", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "life", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "yellow", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "push", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "shallow", next: 'keypad', ready: [false, false, true], delay: 0 },
 
 		{ file: "banana", next: 'keypad', ready: [false, false, true], delay: 0 }
 	],
