@@ -1,7 +1,7 @@
 /* lines */
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap, passwordSprite, password = '';
+let tap, flushSprite, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 4;
 	this.animation.overrideProperty('r', 1);
@@ -74,12 +74,15 @@ const dlgs = {
 		{ file: "push", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "shallow", next: 'keypad', ready: [false, false, true], delay: 0 },
 
-		{ file: "banana", next: 'keypad', ready: [false, false, true], delay: 0 }
+		{ file: "free", next: 'end', ready: [false, false, true], delay: 0 }
+
+		// { file: "banana", next: 'end', ready: [false, false, true], delay: 0 }
 	],
 	next: function() {
 		Game.scene = dlgs.current.next;
 		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
 		else if (dlgs.current.next == 'keypad') toad.playAnimation('Jump');
+		else if (dlgs.current.nex == 'end') end();
 	},
 	nextDialog: function() {
 		voice.pause();
@@ -148,6 +151,8 @@ function start() {
 	});
 	dlgs.sprite = new Sprite(0, 0);
 	// dialogs.sprite.debug = true;
+	flushSprite = new Sprite(0, 0);
+
 }
 
 function draw() {
@@ -171,7 +176,31 @@ function draw() {
 				keypad.sprites[k].display();
 			}
 		break;
+		case 'end':
+			flushSprite.display();
+		break;
 	}
+}
+
+function end() {
+	flushSprite.addAnimation('drawings/flush.json', function() {
+		flushSprite.fit(Game.width);
+		flushSprite.animation.overrideProperty('r', 1);
+		flushSprite.animation.overrideProperty('v', 1);
+		// Game.clearBg = false;
+		flushSprite.displayFunc = function() {
+			this.animation.over.r += 0.01;
+			this.animation.over.v += 0.01;
+		};
+		flushSprite.animation.onPlayedState = function() {
+			flushSprite.animation.stop();
+			// Game.clearBg = true;
+		};
+	});
+	Game.scene = 'end';
+	cactusInterval = setInterval(addCactus, 500);
+	scene.remove( toilet );
+	toad.playAnimation( 'Weird' );
 }
 
 /* events */

@@ -29,7 +29,7 @@ const interval = 1000 / 30;
 let width = window.innerWidth, height = window.innerHeight;
 let camera, scene, renderer, controls;
 let clock, mixer;
-let toad, toilet, banana, bananas = [];
+let toad, toilet, banana, bananas = [], cactus, cactii = [];
 let raycaster;
 const vector = new THREE.Vector3();
 
@@ -111,6 +111,10 @@ function init() {
 		banana = gltf;
 	});
 
+	loader.load('models/cactus.gltf', gltf => {
+		cactus = gltf;
+	});
+
 	/* test cube
 	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
 	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
@@ -118,6 +122,35 @@ function init() {
 	*/
 	// scene.add( testCube );
 }
+
+let cactusInterval;
+function addCactus() {
+	if (cactii.length < 40) {
+		const c = cloneGltf(cactus).scene;
+		const x = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
+		const z = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
+		c.position.set( x, 0, z);
+		const s = Cool.random(0.25, 0.75);
+		c.scale.set( s, s, s );
+		c.morphs = [];
+		c.traverse(o => {
+			if (o.material) o.material.color.set( bgColor );
+			if (o.morphTargetInfluences) c.morphs.push( o );
+		});
+		c.update = function() {
+			const mti = c.morphs[0].morphTargetInfluences;
+			for (let i = 0, len = mti.length; i < len; i++) {
+				mti[i] += Cool.random(-0.02, 0.02);
+				mti[i] = mti[i].clamp(-2, 2);
+			}
+		};
+		cactii.push( c );
+		scene.add( c );
+	} else {
+		clearInterval(cactusInterval);
+	}
+}
+
 
 function makeBananas() {
 	const n = Cool.random(50, 100);
@@ -144,6 +177,10 @@ function animate() {
 					bananas.splice( i, 1 );
 				}
 			}
+		}
+
+		for (let i = 0; i < cactii.length; i++) {
+			cactii[i].update();
 		}
 
 		timer = performance.now();
