@@ -43,6 +43,18 @@ const dlgs = {
 		// { file: "spring", next: 'keypad', ready: [false, false, true], delay: 0 },
 		// { file: "characters", next: 'dialog', ready: [false, false, true], delay: 0 },
 
+		{ file: "best_friend", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "second_best", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "middle", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "first_friend", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "stopped", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "sleep", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "shadow", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "climb", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "despair", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "try_despair", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		{ file: "alone", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "silent", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "try_alone", next: 'keypad', ready: [false, false, true], delay: 0 },
@@ -93,13 +105,14 @@ const dlgs = {
 	load: function() {
 		dlgs.sprite.resetSize();
 		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
-		dlgs.sprite.addAnimation(`drawings/dialogs/${this.current.file}.json`, () => {
+		dlgs.sprite.addAnimation(`drawings/dialogs/${dlgs.current.file}.json`, () => {
 			dlgs.sprite.fit(Game.width);
 			dlgs.sprite.animation.onPlayedState = function() {
 				dlgs.current.ready[0] = true;
 				dlgs.sprite.animation.stop();
 			};
 		});
+		console.log(`audio/${dlgs.current.file}.mp3`)
 		voice.src = `audio/${dlgs.current.file}.mp3`;
 		// voice.addEventListener('loadeddata', function() { });
 		dlgs.play();
