@@ -50,11 +50,6 @@ const dlgs = {
 		{ file: "stopped", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "sleep", next: 'keypad', ready: [false, false, true], delay: 0 },
 
-		{ file: "shadow", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "climb", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "despair", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "try_despair", next: 'keypad', ready: [false, false, true], delay: 0 },
-
 		{ file: "alone", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "silent", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "try_alone", next: 'keypad', ready: [false, false, true], delay: 0 },
@@ -86,6 +81,22 @@ const dlgs = {
 		{ file: "push", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "shallow", next: 'keypad', ready: [false, false, true], delay: 0 },
 
+		{ file: "shadow", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "climb", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "despair", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "try_despair", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "power", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "machines", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "removal", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "fate", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "release_me", next: 'keypad', ready: [false, false, true], delay: 0 },
+
+		{ file: "moments", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "effort", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "count", next: 'dialog', ready: [false, false, true], delay: 0 },
+		{ file: "123456", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		{ file: "free", next: 'end', ready: [false, false, true], delay: 0 }
 
 		// { file: "banana", next: 'end', ready: [false, false, true], delay: 0 }
@@ -105,6 +116,7 @@ const dlgs = {
 	load: function() {
 		dlgs.sprite.resetSize();
 		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
+		console.log(dlgs.current);
 		dlgs.sprite.addAnimation(`drawings/dialogs/${dlgs.current.file}.json`, () => {
 			dlgs.sprite.fit(Game.width);
 			dlgs.sprite.animation.onPlayedState = function() {
@@ -112,7 +124,6 @@ const dlgs = {
 				dlgs.sprite.animation.stop();
 			};
 		});
-		console.log(`audio/${dlgs.current.file}.mp3`)
 		voice.src = `audio/${dlgs.current.file}.mp3`;
 		// voice.addEventListener('loadeddata', function() { });
 		dlgs.play();
@@ -196,6 +207,7 @@ function draw() {
 }
 
 function end() {
+	console.log('flush')
 	flushSprite.addAnimation('drawings/flush.json', function() {
 		flushSprite.fit(Game.width);
 		flushSprite.animation.overrideProperty('r', 1);
@@ -258,8 +270,16 @@ function tapEnd(ev) {
 							}
 							else dlgs.replay();
 						break;
+						case '123456':
+							if (password == '123456') dlgs.nextDialog();
+							else dlgs.replay();
+						break;
 						default:
 							dlgs.nextDialog();
+					}
+					if (password == '123456') {
+						dlgs.index = dlgs.list.length - 3;
+						dlgs.nextDialog();
 					}
 					password = '';
 				});
