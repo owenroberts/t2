@@ -130,8 +130,9 @@ function addCactus() {
 		const x = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
 		const z = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
 		c.position.set( x, 0, z);
-		const s = Cool.random(0.25, 0.75);
+		const s = Cool.random(0.25, 0.5);
 		c.scale.set( s, s, s );
+		c.rotation.y = Cool.random(Math.PI * 2);
 		c.morphs = [];
 		c.traverse(o => {
 			if (o.material) o.material.color.set( bgColor );

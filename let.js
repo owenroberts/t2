@@ -1,7 +1,7 @@
 /* lines */
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap, flushSprite, passwordSprite, password = '';
+let tap, credits, flushSprite, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 4;
 	this.animation.overrideProperty('r', 1);
@@ -25,14 +25,18 @@ const dlgs = {
 		{ file: "hey", next: 'dialog', ready: [false, false, false], delay: 0 },
 		{ file: "help", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "password", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		{ file: "notit", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "colon", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "trybutt", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		{ file: "littlebutt", next: 'keypad', ready: [false, false, true], delay: 0 },
+
 		{ file: "either", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "past", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "town", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "from", next: 'dialog', ready: [false, false, true], delay: 0 },
+
+		{ file: "dumb", next: 'dialog', ready: [false, false, true], delay: 0 },
 		{ file: "cousin", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "dog", next: 'keypad', ready: [false, false, true], delay: 0 },
 		{ file: "cat", next: 'keypad', ready: [false, false, true], delay: 0 },
@@ -105,7 +109,7 @@ const dlgs = {
 		Game.scene = dlgs.current.next;
 		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
 		else if (dlgs.current.next == 'keypad') toad.playAnimation('Jump');
-		else if (dlgs.current.nex == 'end') end();
+		else if (dlgs.current.next == 'end') end();
 	},
 	nextDialog: function() {
 		voice.pause();
@@ -116,7 +120,6 @@ const dlgs = {
 	load: function() {
 		dlgs.sprite.resetSize();
 		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
-		console.log(dlgs.current);
 		dlgs.sprite.addAnimation(`drawings/dialogs/${dlgs.current.file}.json`, () => {
 			dlgs.sprite.fit(Game.width);
 			dlgs.sprite.animation.onPlayedState = function() {
@@ -143,7 +146,7 @@ const dlgs = {
 		return dlgs.current.ready.every(e => { return e; });
 	}
 };
-let voice; /* init with tap */
+let voice, flush; /* init with tap */
 function voiceEnd() {
 	dlgs.current.ready[1] = true;
 	toad.playAnimation('Wave');
@@ -166,16 +169,20 @@ function start() {
 		if (x > Game.width - w) x = 0, y += h;
 	}
 	tap = new Sprite(0, 0);
-	tap.addAnimation('drawings/ui/tap.json', function() {
+	tap.addAnimation('drawings/tap.json', function() {
 		tap.fit(Game.width);
 	});
 	passwordSprite = new Sprite(0, height - 80);
-	passwordSprite.addAnimation('drawings/ui/password.json', function() {
+	passwordSprite.addAnimation('drawings/password.json', function() {
 		passwordSprite.fit(Game.width);
 	});
 	dlgs.sprite = new Sprite(0, 0);
 	// dialogs.sprite.debug = true;
 	flushSprite = new Sprite(0, 0);
+	credits = new Sprite(0, 0);
+	credits.addAnimation('drawings/credits.json', () => {
+		credits.animation.stop();
+	});
 
 }
 
@@ -202,20 +209,27 @@ function draw() {
 		break;
 		case 'end':
 			flushSprite.display();
+			credits.display();
 		break;
 	}
 }
 
 function end() {
-	console.log('flush')
 	flushSprite.addAnimation('drawings/flush.json', function() {
+		flush.play();
+		flush.addEventListener('ended', () => {
+			credits.animation.start();
+			document.getElementById('credits').style.display = 'block';
+		});
 		flushSprite.fit(Game.width);
 		flushSprite.animation.overrideProperty('r', 1);
+		flushSprite.animation.overrideProperty('w', 2);
 		flushSprite.animation.overrideProperty('v', 1);
 		// Game.clearBg = false;
 		flushSprite.displayFunc = function() {
 			this.animation.over.r += 0.01;
-			this.animation.over.v += 0.01;
+			this.animation.over.w += 0.01;
+			this.animation.over.v += 0.1;
 		};
 		flushSprite.animation.onPlayedState = function() {
 			flushSprite.animation.stop();
@@ -238,6 +252,8 @@ function tapEnd(ev) {
 	switch (Game.scene) {
 		case 'tap':
 			voice = new Audio();
+			flush = new Audio();
+			flush.src = '/audio/_flush.mp3';
 			voice.addEventListener('ended', voiceEnd);
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
 				tap.focus(4, () => {
@@ -275,11 +291,13 @@ function tapEnd(ev) {
 							else dlgs.replay();
 						break;
 						default:
-							dlgs.nextDialog();
-					}
-					if (password == '123456') {
-						dlgs.index = dlgs.list.length - 3;
-						dlgs.nextDialog();
+							if (password == '123456') {
+								dlgs.index = dlgs.list.length - 2;
+								dlgs.nextDialog();
+							} else {
+								dlgs.nextDialog();
+							}
+						break;
 					}
 					password = '';
 				});

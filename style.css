@@ -37,3 +37,18 @@ body {
 #lines {
 	/*background: #0d0d26;*/
 }
+
+#credits {
+	position: fixed;
+	top: 60%;
+	left: 50%;
+	margin-left: -50px;
+	font-size: 20px;
+	display: none;
+}
+
+ a {
+	color: white;
+}
+
+#view { text-decoration: underline; }
