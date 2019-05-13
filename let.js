@@ -22,88 +22,88 @@ Sprite.prototype.focus = function(speed, callback) {
 const dlgs = {
 	index: 0,
 	list: [
-		{ file: "hey", next: 'dialog', ready: [false, false, false], delay: 0 },
-		{ file: "help", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "password", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "hey", next: 'dialog', ready: [false, false, false] },
+		{ file: "help", next: 'dialog', ready: [false, false, true] },
+		{ file: "password", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "notit", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "colon", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "trybutt", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "notit", next: 'dialog', ready: [false, false, true] },
+		{ file: "colon", next: 'dialog', ready: [false, false, true] },
+		{ file: "trybutt", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "littlebutt", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "littlebutt", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "either", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "past", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "town", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "either", next: 'dialog', ready: [false, false, true] },
+		{ file: "past", next: 'dialog', ready: [false, false, true] },
+		{ file: "town", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "dumb", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "cousin", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "dog", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "cat", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "dumb", next: 'dialog', ready: [false, false, true] },
+		{ file: "cousin", next: 'keypad', ready: [false, false, true] },
+		{ file: "dog", next: 'keypad', ready: [false, false, true] },
+		{ file: "cat", next: 'keypad', ready: [false, false, true] },
 
-		// { file: "gm", next: 'keypad', ready: [false, false, true], delay: 0 },
-		// { file: "fartville", next: 'keypad', ready: [false, false, true], delay: 0 },
-		// { file: "alone", next: 'keypad', ready: [false, false, true], delay: 0 },
-		// { file: "spring", next: 'keypad', ready: [false, false, true], delay: 0 },
-		// { file: "characters", next: 'dialog', ready: [false, false, true], delay: 0 },
+		// { file: "gm", next: 'keypad', ready: [false, false, true] },
+		// { file: "fartville", next: 'keypad', ready: [false, false, true] },
+		// { file: "alone", next: 'keypad', ready: [false, false, true] },
+		// { file: "spring", next: 'keypad', ready: [false, false, true] },
+		// { file: "characters", next: 'dialog', ready: [false, false, true] },
 
-		{ file: "best_friend", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "second_best", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "middle", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "first_friend", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "stopped", next: 'keypad', ready: [false, false, true], delay: 0 },
-		{ file: "sleep", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "best_friend", next: 'keypad', ready: [false, false, true] },
+		{ file: "second_best", next: 'keypad', ready: [false, false, true] },
+		{ file: "middle", next: 'keypad', ready: [false, false, true] },
+		{ file: "first_friend", next: 'keypad', ready: [false, false, true] },
+		{ file: "stopped", next: 'keypad', ready: [false, false, true] },
+		{ file: "sleep", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "alone", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "silent", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "try_alone", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "alone", next: 'dialog', ready: [false, false, true] },
+		{ file: "silent", next: 'dialog', ready: [false, false, true] },
+		{ file: "try_alone", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "real", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "soul", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "flush", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "real", next: 'dialog', ready: [false, false, true] },
+		{ file: "soul", next: 'dialog', ready: [false, false, true] },
+		{ file: "flush", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "desperate", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "ride", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "plumbing", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "desperate", next: 'dialog', ready: [false, false, true] },
+		{ file: "ride", next: 'dialog', ready: [false, false, true] },
+		{ file: "plumbing", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "each", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "time", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "change", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "seasons", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "each", next: 'dialog', ready: [false, false, true] },
+		{ file: "time", next: 'dialog', ready: [false, false, true] },
+		{ file: "change", next: 'dialog', ready: [false, false, true] },
+		{ file: "seasons", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "direction", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "reflection", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "direction", next: 'dialog', ready: [false, false, true] },
+		{ file: "reflection", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "leave", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "abandon", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "please", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "try_please", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "leave", next: 'dialog', ready: [false, false, true] },
+		{ file: "abandon", next: 'dialog', ready: [false, false, true] },
+		{ file: "please", next: 'dialog', ready: [false, false, true] },
+		{ file: "try_please", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "dropping", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "life", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "yellow", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "push", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "shallow", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "dropping", next: 'dialog', ready: [false, false, true] },
+		{ file: "life", next: 'dialog', ready: [false, false, true] },
+		{ file: "yellow", next: 'dialog', ready: [false, false, true] },
+		{ file: "push", next: 'dialog', ready: [false, false, true] },
+		{ file: "shallow", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "shadow", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "climb", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "despair", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "try_despair", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "shadow", next: 'dialog', ready: [false, false, true] },
+		{ file: "climb", next: 'dialog', ready: [false, false, true] },
+		{ file: "despair", next: 'dialog', ready: [false, false, true] },
+		{ file: "try_despair", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "power", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "machines", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "removal", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "fate", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "release_me", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "power", next: 'dialog', ready: [false, false, true] },
+		{ file: "machines", next: 'dialog', ready: [false, false, true] },
+		{ file: "removal", next: 'dialog', ready: [false, false, true] },
+		{ file: "fate", next: 'dialog', ready: [false, false, true] },
+		{ file: "release_me", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "moments", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "effort", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "count", next: 'dialog', ready: [false, false, true], delay: 0 },
-		{ file: "123456", next: 'keypad', ready: [false, false, true], delay: 0 },
+		{ file: "moments", next: 'dialog', ready: [false, false, true] },
+		{ file: "effort", next: 'dialog', ready: [false, false, true] },
+		{ file: "count", next: 'dialog', ready: [false, false, true] },
+		{ file: "123456", next: 'keypad', ready: [false, false, true] },
 
-		{ file: "free", next: 'end', ready: [false, false, true], delay: 0 }
+		{ file: "free", next: 'end', ready: [false, false, true] }
 
-		// { file: "banana", next: 'end', ready: [false, false, true], delay: 0 }
+		// { file: "banana", next: 'end', ready: [false, false, true] }
 	],
 	next: function() {
 		Game.scene = dlgs.current.next;
@@ -139,7 +139,9 @@ const dlgs = {
 		dlgs.sprite.animation.start();
 	},
 	replay: function() {
-		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
+		// dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
+		dlgs.current.played = false;
+		dlgs.current.ready = [false, false, true];
 		dlgs.play();
 	},
 	isReady: function() {
@@ -196,9 +198,7 @@ function draw() {
 			/* check current dialog */
 			if (dlgs.isReady() && !dlgs.current.played) {
 				dlgs.current.played = true;
-				// setTimeout(dialogs.next.bind(dialogs), dialogs.current.delay);
 				dlgs.next();
-				/* counter ? */
 			}
 		break;
 		case 'keypad':
