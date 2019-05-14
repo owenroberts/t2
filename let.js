@@ -179,13 +179,12 @@ function start() {
 		passwordSprite.fit(Game.width);
 	});
 	dlgs.sprite = new Sprite(0, 0);
-	// dialogs.sprite.debug = true;
+	// dlgs.sprite.debug = true;
 	flushSprite = new Sprite(0, 0);
 	credits = new Sprite(0, 0);
 	credits.addAnimation('drawings/credits.json', () => {
 		credits.animation.stop();
 	});
-
 }
 
 function draw() {
