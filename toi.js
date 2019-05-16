@@ -2,15 +2,44 @@
 function onMotion(ev) {
 	window.removeEventListener('devicemotion', onMotion, false);
 	if (ev.acceleration.x != null || ev.accelerationIncludingGravity.x != null) {
-		motionGo();
+		document.getElementById('desktop').remove();
+		launch();
 	}
 }
 window.addEventListener('devicemotion', onMotion, false);
 if (document.getElementById('desktop'))
 	document.getElementById('desktop').style.opacity = 1;
 
-function motionGo() {
-	document.getElementById('desktop').remove();
+document.getElementById('proceed').addEventListener('click', proceed);
+document.getElementById('proceed').addEventListener('touchend', proceed);
+
+let gif;
+document.getElementById('view').addEventListener('click', () => {
+	if (!gif) {
+		gif = new Image();
+		gif.src = 'safari-fix.gif';
+		document.getElementById('gif-instructions').appendChild(gif);
+		document.body.style.overflow = 'auto';
+	} else {
+		if (gif.style.display == 'none') {
+			gif.style.display = 'block';
+			document.body.style.overflow = 'auto';
+		} else  {
+			gif.style.display = 'none';
+			document.body.style.overflow = 'hidden';
+		}
+	}
+	
+	// https://gist.github.com/tskaggs/6394639 // making gifs
+});
+
+let autoCam = false;
+function proceed() {
+	autoCam = true;
+	launch();
+}
+
+function launch() {
 	init();
 	Game.init({
 		width: window.innerWidth, 
@@ -32,6 +61,24 @@ let clock, mixer;
 let toad, toilet, banana, bananas = [], cactus, cactii = [];
 let raycaster;
 const vector = new THREE.Vector3();
+
+const rig = {
+	animations: {
+		lookDown: {
+			prop: 'rotation',
+			axis: 'x',
+			target: -Math.PI / 2,
+			step: Math.PI / 2 / 60
+		},
+		end: {
+			prop: 'position',
+			axis: 'y',
+			target: 4,
+			step: 0.01
+		}
+	},
+	current: []
+};
 
 // const colors = [ 0x7AFFE2, 0xF8EF71, 0xEBB0EC, 0x9A8DD7, 0xBB6DF2, 0xF0ACDA ]; /* new colors ? */
 // const outlineColor = Cool.random(colors);
@@ -61,9 +108,11 @@ function init() {
 	});
 
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-	controls = new THREE.DeviceOrientationControls( camera );
+	if (!autoCam) controls = new THREE.DeviceOrientationControls( camera );
+	else camera.rotation.x = -Math.PI / 16;
 	camera.position.z = -1;
 	camera.position.y = 2;
+
 
 	raycaster = new THREE.Raycaster( );
 
@@ -114,18 +163,11 @@ function init() {
 	loader.load('models/cactus.gltf', gltf => {
 		cactus = gltf;
 	});
-
-	/* test cube
-	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-	var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-	testCube =  new THREE.Mesh( geometry, material );
-	*/
-	// scene.add( testCube );
 }
 
 let cactusInterval;
 function addCactus() {
-	if (cactii.length < 40) {
+	if (cactii.length < 100) {
 		const c = cloneGltf(cactus).scene;
 		const x = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
 		const z = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
@@ -152,49 +194,40 @@ function addCactus() {
 	}
 }
 
-
-function makeBananas() {
-	const n = Cool.random(50, 100);
-	for (let i = 0; i < n; i++) {
-		const b = cloneGltf( banana ).scene;
-		b.position.set( Cool.random(-1, 1), Cool.random(4, 20), Cool.random(-3, -1) );
-		b.scale.set( 0.05, 0.05, 0.05 );
-		bananas.push( b );
-		scene.add( b );
-	}
-}
-
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
-		// animate bananas
-		for (let i = 0; i < bananas.length; i++) {
-			if (bananas[i]) {
-				bananas[i].rotation.x += Cool.random(0.25);
-				bananas[i].rotation.z += Cool.random(0.25);
-				bananas[i].position.y -= 0.05;
-				if (bananas[i].position.y < -2) {
-					scene.remove( bananas[i] );
-					bananas.splice( i, 1 );
-				}
-			}
-		}
-
+		timer = performance.now();
 		for (let i = 0; i < cactii.length; i++) {
 			cactii[i].update();
 		}
-
-		timer = performance.now();
-		controls.update();
+		if (autoCam) {
+			for (let i = 0; i < rig.current.length; i++) {
+				const a = rig.current[i];
+				const dir = camera[a.prop][a.axis] > a.target ? -1 : 1;
+				if (camera[a.prop][a.axis] < dir * a.target) {
+					if (camera[a.prop][a.axis] + dir * a.step < dir * a.target)
+						camera[a.prop][a.axis] += dir * a.step;
+					else rig.current.splice(i, 1); // remove anim 
+				} else {
+					rig.current.splice(i, 1); // remove anim 
+				}
+			}
+		} else {
+			controls.update();
+		}
 		mixer.update( clock.getDelta() );
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );
 
 		if (Game.scene == 'dialog' && dlgs.index == 0 && dlgs.current) {
-			raycaster.set( camera.position, camera.getWorldDirection( vector ) );
-			const intersects = raycaster.intersectObjects( scene.children, true );
-			if (intersects.length) dlgs.current.ready[2] = true;
-		}
+			if (autoCam) dlgs.current.ready[2] = true;
+			else {
+				raycaster.set( camera.position, camera.getWorldDirection( vector ) );
+				const intersects = raycaster.intersectObjects( scene.children, true );
+				if (intersects.length) dlgs.current.ready[2] = true;
+			}
+		} 
 	}
 }
 // motionGo(); // run in browser

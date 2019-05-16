@@ -15,14 +15,7 @@
 		<p>If you see this message in Safari on an iPhone, you may need to enable "Motion and Orientation Access" in Settings > Safari.</p>
 		<p id="view">View instructions.</p>
 		<p id="gif-instructions"></p>
-		<script>
-			document.getElementById('view').addEventListener('click', () => {
-				const gif = new Image();
-				gif.src = 'safari-fix.gif';
-				document.getElementById('gif-instructions').appendChild(gif);
-				// https://gist.github.com/tskaggs/6394639 // making gifs
-			});
-		</script>
+		<p id="proceed">Or continue with automated camera movement.</p>
 	</div>
 	<div id="credits">
 		<a href="http://owen.cool">owen.cool</a>

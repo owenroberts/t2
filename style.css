@@ -9,7 +9,7 @@ body {
 	background-color: #0d0d26;
 }
 
-a { color: blue; }
+a { color: white; }
 
 body {
 	margin: 0px;
@@ -34,9 +34,8 @@ body {
 	/*display: none;*/
 }
 
-#lines {
-	/*background: #0d0d26;*/
-}
+#lines { /*background: #0d0d26;*/ }
+
 
 #credits {
 	position: fixed;
@@ -46,9 +45,5 @@ body {
 	font-size: 20px;
 	display: none;
 }
-
- a {
-	color: white;
-}
-
-#view { text-decoration: underline; }
+#gif-instructions { margin: 0; }
+#view, #proceed { text-decoration: underline; }
