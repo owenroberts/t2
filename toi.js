@@ -75,6 +75,12 @@ const rig = {
 			axis: 'y',
 			target: 4,
 			step: 0.01
+		},
+		mend: {
+			prop: 'position',
+			axis: 'y',
+			target: -2,
+			step: 0.006
 		}
 	},
 	current: []
@@ -201,21 +207,20 @@ function animate() {
 		for (let i = 0; i < cactii.length; i++) {
 			cactii[i].update();
 		}
-		if (autoCam) {
-			for (let i = 0; i < rig.current.length; i++) {
-				const a = rig.current[i];
-				const dir = camera[a.prop][a.axis] > a.target ? -1 : 1;
-				if (camera[a.prop][a.axis] < dir * a.target) {
-					if (camera[a.prop][a.axis] + dir * a.step < dir * a.target)
-						camera[a.prop][a.axis] += dir * a.step;
-					else rig.current.splice(i, 1); // remove anim 
-				} else {
-					rig.current.splice(i, 1); // remove anim 
-				}
+
+		// camera animations 
+		for (let i = 0; i < rig.current.length; i++) {
+			const a = rig.current[i];
+			const dir = camera[a.prop][a.axis] > a.target ? -1 : 1;
+			if (Math.abs(camera[a.prop][a.axis] - a.target) > a.step) {
+				camera[a.prop][a.axis] += dir * a.step;
+			} else {
+				camera[a.prop][a.axis] = a.target;
+				rig.current.splice(i, 1); // remove anim 
 			}
-		} else {
-			controls.update();
 		}
+			
+		if (!autoCam) controls.update();
 		mixer.update( clock.getDelta() );
 		// renderer.render(scene, camera);
 		effect.render( scene, camera );

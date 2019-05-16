@@ -125,13 +125,14 @@ const dlgs = {
 		{ file: "count", next: 'dialog' },
 		{ file: "123456", next: 'keypad' },
 
-		{ file: "free", next: 'end', cam: 'end' }
+		{ file: "free", next: 'end', cam: 'end', mcam: 'mend' }
 
 		// { file: "banana", next: 'end' }
 	],
 	next: function() {
 		Game.scene = dlgs.current.next;
 		if (autoCam && dlgs.current.cam) rig.current.push(rig.animations[dlgs.current.cam]);
+		if (!autoCam && dlgs.current.mcam) rig.current.push(rig.animations[dlgs.current.mcam]);
 		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
 		else if (dlgs.current.next == 'keypad') toad.playAnimation('Jump');
 		else if (dlgs.current.next == 'end') end();
