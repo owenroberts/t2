@@ -36,7 +36,6 @@ body {
 
 #lines { /*background: #0d0d26;*/ }
 
-
 #credits {
 	position: fixed;
 	top: 60%;
@@ -46,4 +45,5 @@ body {
 	display: none;
 }
 #gif-instructions { margin: 0; }
-#view, #proceed { text-decoration: underline; }
+.mobile { display: none; }
+#view, #proceed { text-decoration: underline; } 

@@ -65,12 +65,6 @@ const dlgs = {
 		{ file: "dog", next: 'keypad' },
 		{ file: "cat", next: 'keypad' },
 
-		// { file: "gm", next: 'keypad' },
-		// { file: "fartville", next: 'keypad' },
-		// { file: "alone", next: 'keypad' },
-		// { file: "spring", next: 'keypad' },
-		// { file: "characters", next: 'dialog' },
-
 		{ file: "best_friend", next: 'keypad' },
 		{ file: "second_best", next: 'keypad' },
 		{ file: "middle", next: 'keypad' },
@@ -125,16 +119,15 @@ const dlgs = {
 		{ file: "count", next: 'dialog' },
 		{ file: "123456", next: 'keypad' },
 
-		{ file: "free", next: 'end', cam: 'end', mcam: 'mend' }
+		{ file: "free", next: 'end' }
 
-		// { file: "banana", next: 'end' }
 	],
 	next: function() {
 		Game.scene = dlgs.current.next;
-		if (autoCam && dlgs.current.cam) rig.current.push(rig.animations[dlgs.current.cam]);
-		if (!autoCam && dlgs.current.mcam) rig.current.push(rig.animations[dlgs.current.mcam]);
+		if (autoCam && dlgs.current.cam) rig.add(dlgs.current.cam);
+		if (!autoCam && dlgs.current.mcam) rig.add(dlgs.current.mcam);
 		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
-		else if (dlgs.current.next == 'keypad') toad.playAnimation('Jump');
+		else if (dlgs.current.next == 'keypad') toad.playAnimation();
 		else if (dlgs.current.next == 'end') end();
 	},
 	nextDialog: function() {
@@ -178,7 +171,7 @@ const dlgs = {
 let voice, flush; /* init with tap */
 function voiceEnd() {
 	dlgs.current.ready[1] = true;
-	toad.playAnimation('Wave');
+	toad.playAnimation();
 }
 
 function start() {
@@ -241,6 +234,8 @@ function draw() {
 }
 
 function end() {
+	if (autoCam) rig.add('end');
+	if (!autoCam) rig.add('mend');
 	flushSprite.addAnimation('drawings/flush.json', function() {
 		flush.play();
 		flush.addEventListener('ended', () => {
@@ -289,6 +284,7 @@ function tapEnd(ev) {
 					// makeBananas();
 				});
 			}
+			// if (autoCam) setTimeout(randomCam, 4000);
 		break;
 		case 'keypad':
 			for (const k in keypad.sprites) {

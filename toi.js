@@ -13,6 +13,13 @@ if (document.getElementById('desktop'))
 document.getElementById('proceed').addEventListener('click', proceed);
 document.getElementById('proceed').addEventListener('touchend', proceed);
 
+if (Cool.mobilecheck()) {
+	document.getElementById('owen').remove();
+	Array.from(document.getElementsByClassName('mobile')).forEach(e => {
+		e.style.display = 'block';
+	});
+}
+
 let gif;
 document.getElementById('view').addEventListener('click', () => {
 	if (!gif) {
@@ -62,26 +69,49 @@ let toad, toilet, banana, bananas = [], cactus, cactii = [];
 let raycaster;
 const vector = new THREE.Vector3();
 
+// duraiton in frames 
 const rig = {
 	animations: {
 		lookDown: {
 			prop: 'rotation',
 			axis: 'x',
 			target: -Math.PI / 2,
-			step: Math.PI / 2 / 60
+			func: 'easeOut',
+			duration: 60
 		},
 		end: {
 			prop: 'position',
 			axis: 'y',
 			target: 4,
-			step: 0.01
+			func: 'linear',
+			duration: 240
 		},
 		mend: {
 			prop: 'position',
 			axis: 'y',
 			target: -2,
-			step: 0.006
+			func: 'linear',
+			duration: 240
 		}
+	},
+	easeOut: function(iteration, start, change, total) {
+		return change * (Math.pow(iteration / total - 1, 3) + 1) + start;
+	},
+	linear: function(iteration, start, change, total) {
+		return Cool.map(iteration, 0, total, start, start + change);
+	},
+	add: function(anim) {
+		const a = rig.animations[anim];
+		a.i = 0;
+		a.start = camera[a.prop][a.axis];
+		a.change = a.target - a.start;
+		rig.current.push(a);
+	},
+	create: function(prop, axis, change, func, duration) {
+		const a = { prop: prop, axis: axis, change: change, func: func, duration: duration, i: 0};
+		a.start = camera[prop][axis];
+		a.target = a.start + a.change;
+		rig.current.push(a);
 	},
 	current: []
 };
@@ -119,6 +149,7 @@ function init() {
 	camera.position.z = -1;
 	camera.position.y = 2;
 
+	
 
 	raycaster = new THREE.Raycaster( );
 
@@ -154,9 +185,10 @@ function init() {
 		toad.position.set( 0, -0.3, -0.4 );
 		toad.animations.current = 'Wave';
 		toad.playAnimation = function(label) {
+			let anim = label ? label : Cool.random(['Wave', 'Idle', 'Look1', 'Look2', 'Look3', 'Look4', 'Look5']);
 			mixer.clipAction( toad.animations[toad.animations.current], toad ).stop();
-			mixer.clipAction( toad.animations[label], toad ).play();
-			toad.animations.current = label;
+			mixer.clipAction( toad.animations[anim], toad ).play();
+			toad.animations.current = anim;
 		};
 		mixer.clipAction( toad.animations['Wave'], toad ).play();
 		scene.add( toad );
@@ -175,8 +207,8 @@ let cactusInterval;
 function addCactus() {
 	if (cactii.length < 100) {
 		const c = cloneGltf(cactus).scene;
-		const x = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
-		const z = Cool.random(0.5, 2) * (Cool.random(2) > 1 ? -1 : 1);
+		const x = Cool.random(0.5, 3) * (Cool.random(2) > 1 ? -1 : 1);
+		const z = Cool.random(0.5, 3) * (Cool.random(2) > 1 ? -1 : 1);
 		c.position.set( x, 0, z);
 		const s = Cool.random(0.25, 0.5);
 		c.scale.set( s, s, s );
@@ -200,6 +232,19 @@ function addCactus() {
 	}
 }
 
+function randomCam() {
+	if (Game.scene != 'end') {
+		rig.create(
+			Cool.random(['position', 'rotation']),
+			Cool.random(['x', 'y', 'z']),
+			Cool.random(-0.1, 0.1),
+			Cool.random(['linear', 'easeOut']),
+			Cool.random(20, 40)
+		);
+		// setTimeout(randomCam, Cool.random(2000, 4000));
+	}
+}
+
 function animate() {
 	requestAnimationFrame( animate );
 	if (performance.now() > interval + timer) {
@@ -211,9 +256,9 @@ function animate() {
 		// camera animations 
 		for (let i = 0; i < rig.current.length; i++) {
 			const a = rig.current[i];
-			const dir = camera[a.prop][a.axis] > a.target ? -1 : 1;
-			if (Math.abs(camera[a.prop][a.axis] - a.target) > a.step) {
-				camera[a.prop][a.axis] += dir * a.step;
+			if (a.i <= a.duration) {
+				camera[a.prop][a.axis] = rig[a.func](a.i, a.start, a.change, a.duration);
+				a.i++;
 			} else {
 				camera[a.prop][a.axis] = a.target;
 				rig.current.splice(i, 1); // remove anim 
