@@ -50,7 +50,7 @@ function launch() {
 	init();
 	Game.init({
 		width: window.innerWidth, 
-		height: window.innerHeight, 
+		height: window.innerHeight,
 		lps: 12, 
 		stats: false,
 		debug: false,
@@ -58,6 +58,7 @@ function launch() {
 	});
 	Game.scene = 'tap';
 	Game.ctx.strokeStyle = "#fff";
+	
 }
 
 let timer = performance.now();

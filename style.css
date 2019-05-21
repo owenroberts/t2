@@ -34,7 +34,8 @@ body {
 	/*display: none;*/
 }
 
-#lines { /*background: #0d0d26;*/ }
+/*#lines.bg { background-color: #0d0d26; }*/
+/* canvas bg fucked up in mobile */
 
 #credits {
 	position: fixed;

@@ -142,6 +142,9 @@ const dlgs = {
 		if (!dlgs.current.ready) dlgs.current.ready = [false, false, true];
 		dlgs.sprite.addAnimation(`drawings/dialogs/${dlgs.current.file}.json`, () => {
 			dlgs.sprite.fit(Game.width);
+			dlgs.sprite.position.x = Game.width / 2;
+			dlgs.sprite.position.y = Game.height / 2;
+			dlgs.sprite.center();
 			dlgs.sprite.animation.onPlayedState = function() {
 				dlgs.current.ready[0] = true;
 				dlgs.sprite.animation.stop();
@@ -176,10 +179,12 @@ function voiceEnd() {
 
 function start() {
 	const o = 6; // random offset
-	const c = Math.floor(width / (width > 320 ? 56 : 48)); // columns
-	const w = width / c; // column width
-	const h = w + 6;
-	let x = 0, y = 10;
+	const keypadWidth = Math.min(400, width);
+	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
+	const w = keypadWidth / c; // column width
+	const h = w + (keypadWidth > 320 ? 12: 6);
+	const start = Game.width > 400 ? (Game.width - 400) / 2 : 0;
+	let x = start, y = Game.height > 700 ? 100 : 10;
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
 		const index = Cool.randomInt(keys.length - 1);
@@ -188,19 +193,25 @@ function start() {
 		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
 		keypad.sprites[k].addAnimation(`drawings/keypad/${k}.json`);
 		x += w;
-		if (x > Game.width - w) x = 0, y += h;
+		if (x > start + keypadWidth - w) x = start, y += h;
 	}
-	tap = new Sprite(0, 0);
+
+	tap = new Sprite(Game.width/2, Game.height/2);
 	tap.addAnimation('drawings/tap.json', function() {
 		tap.fit(Game.width);
+		tap.center();
 	});
-	passwordSprite = new Sprite(0, height - 80);
+	passwordSprite = new Sprite(Game.width/2, height - 80);
 	passwordSprite.addAnimation('drawings/password.json', function() {
 		passwordSprite.fit(Game.width);
+		passwordSprite.center();
+		if (y + h > passwordSprite.position.y) {
+			passwordSprite.position.y = y + h + 8;
+		}
 	});
-	dlgs.sprite = new Sprite(0, 0);
+	dlgs.sprite = new Sprite(Game.width/2, Game.height/2);
 	// dlgs.sprite.debug = true;
-	flushSprite = new Sprite(0, 0);
+	flushSprite = new Sprite(Game.width/2, Game.height/2);
 	credits = new Sprite(0, 0);
 	credits.addAnimation('drawings/credits.json', () => {
 		credits.animation.stop();
@@ -237,6 +248,8 @@ function end() {
 	if (autoCam) rig.add('end');
 	if (!autoCam) rig.add('mend');
 	flushSprite.addAnimation('drawings/flush.json', function() {
+		flushSprite.scale(Game.width / flushSprite.width);
+		flushSprite.center();
 		flush.play();
 		flush.addEventListener('ended', () => {
 			credits.animation.start();
@@ -272,11 +285,12 @@ function tapStart(ev) {
 function tapEnd(ev) {
 	switch (Game.scene) {
 		case 'tap':
-			voice = new Audio();
-			flush = new Audio();
-			flush.src = '/audio/_flush.mp3';
-			voice.addEventListener('ended', voiceEnd);
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
+				voice = new Audio();
+				flush = new Audio();
+				flush.src = '/audio/_flush.mp3';
+				lines.classList.remove('bg')
+				voice.addEventListener('ended', voiceEnd);
 				tap.focus(4, () => {
 					Game.scene = 'dialog';
 					animate();
