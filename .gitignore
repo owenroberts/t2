@@ -3,3 +3,4 @@ blenders
 *.pem
 flush/
 script.txt
+js/easing.js

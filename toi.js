@@ -95,11 +95,21 @@ const rig = {
 			duration: 240
 		}
 	},
+	// https://www.kirupa.com/html5/animating_with_easing_functions_in_javascript.htm
 	easeOut: function(iteration, start, change, total) {
 		return change * (Math.pow(iteration / total - 1, 3) + 1) + start;
 	},
 	linear: function(iteration, start, change, total) {
 		return Cool.map(iteration, 0, total, start, start + change);
+	},
+	easeIn: function(iteration, start, change, total) {
+		return change * Math.pow(iteration / total, 3) + start;
+	},
+	easeInOut: function(iteration, start, change, total) {
+		if ((iteration /= total / 2) < 1) {
+			return change / 2 * Math.pow(iteration, 3) + start;
+		}
+		return change / 2 * (Math.pow(iteration - 2, 3) + 2) + start;
 	},
 	add: function(anim) {
 		const a = rig.animations[anim];
@@ -129,6 +139,7 @@ function init() {
 	if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
 		scene.rotation.set( 0, -Math.PI/2, 0 );
 		scene.position.set( -1, 0, -1 ); // match camera offset
+		// seems to change based on start angle .... 
 	}
 
 	renderer = new THREE.WebGLRenderer();
@@ -237,7 +248,7 @@ function randomCam() {
 			prop: Cool.random(['position', 'rotation']),
 			axis: Cool.random(['x', 'y', 'z']),
 			change: Cool.random(-0.1, 0.1),
-			func: Cool.random(['linear', 'easeOut']),
+			func: Cool.random(['linear', 'easeOut', 'easeIn', 'easeInOut']),
 			duration: Cool.random(20, 40)
 		};
 		rig.create(params);
@@ -285,7 +296,6 @@ function animate() {
 		} 
 	}
 }
-// motionGo(); // run in browser
 	
 /* boring */
 function onWindowResize() { 

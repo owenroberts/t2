@@ -182,8 +182,10 @@ function start() {
 	const keypadWidth = Math.min(400, width);
 	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
 	const w = keypadWidth / c; // column width
+	console.log(Game.width, keypadWidth, w, c)
 	const h = w + (keypadWidth > 320 ? 12: 6);
-	const start = Game.width > 400 ? (Game.width - 400) / 2 : 0;
+	const start = Game.width > keypadWidth ? w / 2 : 0;
+	console.log(start);
 	let x = start, y = Game.height > 700 ? 100 : 10;
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
@@ -290,19 +292,18 @@ function tapEnd(ev) {
 				flush = new Audio();
 				flush.src = '/audio/_flush.mp3';
 				if (autoCam) setTimeout(randomCam, 4000);
-				document.getElementById('lines').classList.remove('bg')
+				// document.getElementById('lines').classList.remove('bg');
 				voice.addEventListener('ended', voiceEnd);
 				tap.focus(4, () => {
 					Game.scene = 'dialog';
 					animate();
 					dlgs.load();
-					// makeBananas();
 				});
 			}
 		break;
 		case 'keypad':
 			for (const k in keypad.sprites) {
-				const key =  keypad.sprites[k];
+				const key = keypad.sprites[k];
 				if (key.tap(lastTouch.x, lastTouch.y)) {
 					key.focus(2);
 					password += k;
