@@ -108,17 +108,15 @@ const rig = {
 		a.change = a.target - a.start;
 		rig.current.push(a);
 	},
-	create: function(prop, axis, change, func, duration) {
-		const a = { prop: prop, axis: axis, change: change, func: func, duration: duration, i: 0};
-		a.start = camera[prop][axis];
-		a.target = a.start + a.change;
-		rig.current.push(a);
+	create: function(params) {
+		const anim = { ...params, i: 0};
+		anim.start = camera[params.prop][params.axis];
+		anim.target = anim.start + anim.change;
+		rig.current.push(anim);
 	},
 	current: []
 };
 
-// const colors = [ 0x7AFFE2, 0xF8EF71, 0xEBB0EC, 0x9A8DD7, 0xBB6DF2, 0xF0ACDA ]; /* new colors ? */
-// const outlineColor = Cool.random(colors);
 const outlineColor = 0xFFFFFF;
 const bgColor = 0x0d0d26;
 
@@ -235,14 +233,20 @@ function addCactus() {
 
 function randomCam() {
 	if (Game.scene != 'end') {
-		rig.create(
-			Cool.random(['position', 'rotation']),
-			Cool.random(['x', 'y', 'z']),
-			Cool.random(-0.1, 0.1),
-			Cool.random(['linear', 'easeOut']),
-			Cool.random(20, 40)
-		);
-		// setTimeout(randomCam, Cool.random(2000, 4000));
+		const params = {
+			prop: Cool.random(['position', 'rotation']),
+			axis: Cool.random(['x', 'y', 'z']),
+			change: Cool.random(-0.1, 0.1),
+			func: Cool.random(['linear', 'easeOut']),
+			duration: Cool.random(20, 40)
+		};
+		rig.create(params);
+		const t = Cool.random(1000, 2000);
+		setTimeout(function() {
+			params.change *= -1;
+			rig.create(params);
+		}, t);
+		setTimeout(randomCam, t * 4);
 	}
 }
 

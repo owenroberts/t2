@@ -1,7 +1,7 @@
 /* lines */
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap, credits, flushSprite, passwordSprite, password = '';
+let tap, creditsSprite, flushSprite, passwordSprite, password = '';
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 3;
 	this.animation.overrideProperty('r', 1);
@@ -212,9 +212,9 @@ function start() {
 	dlgs.sprite = new Sprite(Game.width/2, Game.height/2);
 	// dlgs.sprite.debug = true;
 	flushSprite = new Sprite(Game.width/2, Game.height/2);
-	credits = new Sprite(0, 0);
-	credits.addAnimation('drawings/credits.json', () => {
-		credits.animation.stop();
+	creditsSprite = new Sprite(0, 0);
+	creditsSprite.addAnimation('drawings/credits.json', () => {
+		creditsSprite.animation.stop();
 	});
 }
 
@@ -239,7 +239,7 @@ function draw() {
 		break;
 		case 'end':
 			flushSprite.display();
-			credits.display();
+			creditsSprite.display();
 		break;
 	}
 }
@@ -252,7 +252,7 @@ function end() {
 		flushSprite.center();
 		flush.play();
 		flush.addEventListener('ended', () => {
-			credits.animation.start();
+			creditsSprite.animation.start();
 			document.getElementById('credits').style.display = 'block';
 		});
 		flushSprite.fit(Game.width);
@@ -289,7 +289,8 @@ function tapEnd(ev) {
 				voice = new Audio();
 				flush = new Audio();
 				flush.src = '/audio/_flush.mp3';
-				lines.classList.remove('bg')
+				if (autoCam) setTimeout(randomCam, 4000);
+				document.getElementById('lines').classList.remove('bg')
 				voice.addEventListener('ended', voiceEnd);
 				tap.focus(4, () => {
 					Game.scene = 'dialog';
@@ -298,7 +299,6 @@ function tapEnd(ev) {
 					// makeBananas();
 				});
 			}
-			// if (autoCam) setTimeout(randomCam, 4000);
 		break;
 		case 'keypad':
 			for (const k in keypad.sprites) {
