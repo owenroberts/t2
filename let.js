@@ -182,7 +182,6 @@ function start() {
 	const keypadWidth = Math.min(400, width);
 	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
 	const w = keypadWidth / c; // column width
-	console.log(Game.width, keypadWidth, w, c)
 	const h = w + (keypadWidth > 320 ? 12: 6);
 	const start = Game.width > keypadWidth ? w / 2 : 0;
 	console.log(start);
@@ -290,7 +289,7 @@ function tapEnd(ev) {
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
 				voice = new Audio();
 				flush = new Audio();
-				flush.src = '/audio/_flush.mp3';
+				flush.src = '/audio/flush_.mp3';
 				if (autoCam) setTimeout(randomCam, 4000);
 				// document.getElementById('lines').classList.remove('bg');
 				voice.addEventListener('ended', voiceEnd);
