@@ -133,7 +133,6 @@ const dlgs = {
 	nextDialog: function() {
 		voice.pause();
 		dlgs.index++;
-		// this.current = { ...this.list[this.index] }; // clone
 		dlgs.load();
 	},
 	load: function() {
@@ -184,7 +183,6 @@ function start() {
 	const w = keypadWidth / c; // column width
 	const h = w + (keypadWidth > 320 ? 12: 6);
 	const start = Game.width > keypadWidth ? w / 2 : 0;
-	console.log(start);
 	let x = start, y = Game.height > 700 ? 100 : 10;
 	const keys = [...keypad.files];
 	for (let i = 0; i < keypad.files.length; i++) {
