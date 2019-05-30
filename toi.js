@@ -3,7 +3,7 @@ function onMotion(ev) {
 	window.removeEventListener('devicemotion', onMotion, false);
 	if (ev.acceleration.x != null || ev.accelerationIncludingGravity.x != null) {
 		document.getElementById('desktop').remove();
-		launch();
+		init();
 	}
 }
 window.addEventListener('devicemotion', onMotion, false);
@@ -43,7 +43,7 @@ document.getElementById('view').addEventListener('click', () => {
 let autoCam = false;
 function proceed() {
 	autoCam = true;
-	launch();
+	init();
 }
 
 function launch() {
@@ -58,7 +58,6 @@ function launch() {
 	});
 	Game.scene = 'tap';
 	Game.ctx.strokeStyle = "#fff";
-	
 }
 
 let timer = performance.now();
@@ -159,8 +158,6 @@ function init() {
 	camera.position.z = -1;
 	camera.position.y = 2;
 
-	
-
 	raycaster = new THREE.Raycaster( );
 
 	mixer = new THREE.AnimationMixer( scene );
@@ -173,6 +170,7 @@ function init() {
 		// console.log( 'loaded' );
 		// move to start or whatever 
 		// calling animate from game, could init game here?
+		launch();
 	};
 
 	const loader = new THREE.GLTFLoader( loadingManager );
