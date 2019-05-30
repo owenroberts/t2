@@ -47,7 +47,6 @@ function proceed() {
 }
 
 function launch() {
-	init();
 	Game.init({
 		width: window.innerWidth, 
 		height: window.innerHeight,
