@@ -178,8 +178,20 @@ function voiceEnd() {
 	toad.playAnimation();
 }
 
+function launch() {
+	Game.init({
+		width: window.innerWidth, 
+		height: window.innerHeight,
+		lps: 12, 
+		stats: false,
+		debug: false,
+		mixedColors: false
+	});
+	Game.scene = 'tap';
+	Game.ctx.strokeStyle = "#fff";
+}
+
 function start() {
-	console.log('start');
 	const o = 6; // random offset
 	const keypadWidth = Math.min(400, width);
 	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
@@ -346,3 +358,14 @@ function tapEnd(ev) {
 window.addEventListener('touchstart', tapStart);
 window.addEventListener('touchend', tapEnd);
 
+function setupClickEvents() {
+	const canvas = document.getElementById('lines');
+
+	canvas.addEventListener('mousedown', ev => {
+		lastTouch = { x: ev.offsetX, y: ev.offsetY };
+	});
+
+	canvas.addEventListener('mouseup', ev => {
+		tapEnd();
+	});	
+}

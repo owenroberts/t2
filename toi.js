@@ -18,19 +18,7 @@ function launchAuto() {
 	autoCam = true;
 	camera.rotation.x = -Math.PI / 16;
 	loadModels();
-}
-
-function launch() {
-	Game.init({
-		width: window.innerWidth, 
-		height: window.innerHeight,
-		lps: 12, 
-		stats: false,
-		debug: false,
-		mixedColors: false
-	});
-	Game.scene = 'tap';
-	Game.ctx.strokeStyle = "#fff";
+	setupClickEvents();
 }
 
 let timer = performance.now();
