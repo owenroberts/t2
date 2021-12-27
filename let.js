@@ -2,6 +2,7 @@
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
 let tap, creditsSprite, flushSprite, passwordSprite, password = '';
+
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 3;
 	this.animation.overrideProperty('r', 1);
@@ -170,6 +171,7 @@ const dlgs = {
 		return dlgs.current.ready.every(e => { return e; });
 	}
 };
+
 let voice, flush; /* init with tap */
 function voiceEnd() {
 	dlgs.current.ready[1] = true;
@@ -177,6 +179,7 @@ function voiceEnd() {
 }
 
 function start() {
+	console.log('start');
 	const o = 6; // random offset
 	const keypadWidth = Math.min(400, width);
 	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns

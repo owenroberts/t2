@@ -21,6 +21,20 @@ body {
 	right: 0;
 }
 
+button {
+	font-family: Verdana, monospace, sans-serif;
+	border: none;
+	background:  none;
+	text-decoration: underline;
+	cursor: pointer;
+	color: white;
+	font-size: 2em;
+}
+
+#loading, #play {
+	display: none;
+}
+
 #desktop {
 	opacity: 0;
 	transition: opacity 2s ease-in;
@@ -45,6 +59,15 @@ body {
 	font-size: 20px;
 	display: none;
 }
-#gif-instructions { margin: 0; }
-.mobile { display: none; }
-#view, #proceed { text-decoration: underline; } 
+/*.mobile { display: none; }*/
+#view, #proceed { 
+	text-decoration: underline;
+	cursor: pointer;
+} 
+
+.preload * {
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-ms-transition: none !important;
+	-o-transition: none !important;
+}

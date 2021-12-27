@@ -7,15 +7,16 @@
 	<title>toilet.cool</title>
 	<link href="./style.css" rel="stylesheet" type="text/css">
 </head>
-<body>
+<body class="preload">
 	<canvas id="lines" class="bg"></canvas>
+	<div id="splash">
+		<button id="start-button">Start</button>
+		<p id="loading">Loading...</p>
+	</div>
 	<div id="desktop">
-		<p>Hi there, toilet.cool only works on a mobile device.</p>
-		<p id="owen">If you're on a desktop, why not check out <a href="http://owen.cool">owen.cool</a>?</p>
-		<p id="safari" class="mobile">If you see this message in Safari on an iPhone, you may need to enable "Motion and Orientation Access" in Settings > Safari.</p>
-		<p id="view" class="mobile">View instructions.</p>
-		<p id="gif-instructions" class="mobile"></p>
-		<p id="proceed" class="mobile">Or continue with automated camera movement.</p>
+		<p>Recommended for mobile.</p>
+		<p>If using mobile, for device orientation control, refresh and allow device orientation access.  You may need to clear your browser cache.</p>
+		<p id="proceed">Or continue with automated camera movement.</p>
 	</div>
 	<div id="credits">
 		<a href="http://owen.cool">owen.cool</a>
@@ -23,7 +24,7 @@
 
 	<script src="js/three.min.js"></script>
 	<script src="js/three-clone-gltf.js"></script>
-	<script src="js/DeviceOrientationControls.js"></script>
+	<script src="js/_DeviceOrientationControls.js"></script>
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/OutlineEffect.js"></script>
 	<script src="js/GLTFLoader.js"></script>

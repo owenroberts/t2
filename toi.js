@@ -1,49 +1,23 @@
-// better than mobile check, includes ipad
-function onMotion(ev) {
-	window.removeEventListener('devicemotion', onMotion, false);
-	if (ev.acceleration.x != null || ev.accelerationIncludingGravity.x != null) {
-		document.getElementById('desktop').remove();
-		init();
-	}
-}
-window.addEventListener('devicemotion', onMotion, false);
-if (document.getElementById('desktop'))
-	document.getElementById('desktop').style.opacity = 1;
+const blocker = document.getElementById('blocker');
+const startButton = document.getElementById('start-button');
+const loading = document.getElementById('loading');
+const play = document.getElementById('play');
+const proceed =  document.getElementById('proceed');
+const desktop =  document.getElementById('desktop');
 
-document.getElementById('proceed').addEventListener('click', proceed);
-document.getElementById('proceed').addEventListener('touchend', proceed);
+// tap.addEventListener('touchend', start, false);
+// tap.addEventListener('click', start, false);
+startButton.onclick = init;
 
-if (Cool.mobilecheck()) {
-	document.getElementById('owen').remove();
-	Array.from(document.getElementsByClassName('mobile')).forEach(e => {
-		e.style.display = 'block';
-	});
-}
-
-let gif;
-document.getElementById('view').addEventListener('click', () => {
-	if (!gif) {
-		gif = new Image();
-		gif.src = 'safari-fix.gif';
-		document.getElementById('gif-instructions').appendChild(gif);
-		document.body.style.overflow = 'auto';
-	} else {
-		if (gif.style.display == 'none') {
-			gif.style.display = 'block';
-			document.body.style.overflow = 'auto';
-		} else  {
-			gif.style.display = 'none';
-			document.body.style.overflow = 'hidden';
-		}
-	}
-	
-	// https://gist.github.com/tskaggs/6394639 // making gifs
-});
+proceed.addEventListener('click', launchAuto, false);
+proceed.addEventListener('touchend', launchAuto, false);
 
 let autoCam = false;
-function proceed() {
+function launchAuto() {
+	desktop.remove();
 	autoCam = true;
-	init();
+	camera.rotation.x = -Math.PI / 16;
+	loadModels();
 }
 
 function launch() {
@@ -129,37 +103,66 @@ const outlineColor = 0xFFFFFF;
 const bgColor = 0x0d0d26;
 
 function init() {
+
+	document.body.classList.remove('preload');
+	startButton.remove();
+
 	clock = new THREE.Clock();
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color( bgColor );
 
 	// change orientation for android
 	if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
-		scene.rotation.set( 0, -Math.PI/2, 0 );
-		scene.position.set( -1, 0, -1 ); // match camera offset
+		scene.rotation.set(0, -Math.PI/2, 0);
+		scene.position.set(-1, 0, -1); // match camera offset
 		// seems to change based on start angle .... 
 	}
 
 	renderer = new THREE.WebGLRenderer();
-	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(width, height);
 	document.body.appendChild(renderer.domElement);
 	renderer.domElement.id = 'three';
 
-	effect = new THREE.OutlineEffect( renderer, {
+	effect = new THREE.OutlineEffect(renderer, {
 		defaultThickNess: 2,
-		defaultColor: new THREE.Color( outlineColor )
+		defaultColor: new THREE.Color(outlineColor)
 	});
 
-	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1100 );
-	if (!autoCam) controls = new THREE.DeviceOrientationControls( camera );
-	else camera.rotation.x = -Math.PI / 16;
+	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
 	camera.position.z = -1;
 	camera.position.y = 2;
 
-	raycaster = new THREE.Raycaster( );
+	/* if device access granted, launch, else show touch controls button */
+	const events = {
+		onControlsGranted() {
+			loadModels();
+		},
+		onControlsDenied() {
+			desktop.style.opacity = 1;
+		},
+		onCheckDevice() {
 
-	mixer = new THREE.AnimationMixer( scene );
+			desktop.style.opacity = 1;
+
+			function onMotion(ev) {
+				window.removeEventListener('devicemotion', onMotion, false);
+				if (event.rotationRate.alpha || event.rotationRate.beta || event.rotationRate.gamma) {
+					if (desktop) desktop.remove();
+					loadModels();
+				}
+			}
+			window.addEventListener('devicemotion', onMotion, false);
+		}
+	};
+
+	controls = new THREE.DeviceOrientationControls(camera, events);
+	raycaster = new THREE.Raycaster();
+	mixer = new THREE.AnimationMixer(scene);
+}
+
+function loadModels() {
+	loading.style.display = true;
 
 	const loadingManager = new THREE.LoadingManager();
 	loadingManager.onProgress = function( item, loaded, total ) {
@@ -179,6 +182,7 @@ function init() {
 		toilet.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
 		scene.add( toilet );
 	});
+
 	loader.load("models/toad.gltf", gltf => {
 		toad = gltf.scene;
 		toad.traverse(o => { if (o.material) o.material.color.set( bgColor ); });
@@ -279,15 +283,15 @@ function animate() {
 		}
 			
 		if (!autoCam) controls.update();
-		mixer.update( clock.getDelta() );
+		mixer.update(clock.getDelta());
 		// renderer.render(scene, camera);
-		effect.render( scene, camera );
+		effect.render(scene, camera);
 
-		if (Game.scene == 'dialog' && dlgs.index == 0 && dlgs.current) {
+		if (Game.scene === 'dialog' && dlgs.index === 0 && dlgs.current) {
 			if (autoCam) dlgs.current.ready[2] = true;
 			else {
-				raycaster.set( camera.position, camera.getWorldDirection( vector ) );
-				const intersects = raycaster.intersectObjects( scene.children, true );
+				raycaster.set(camera.position, camera.getWorldDirection(vector));
+				const intersects = raycaster.intersectObjects(scene.children, true);
 				if (intersects.length) dlgs.current.ready[2] = true;
 			}
 		} 
@@ -303,26 +307,8 @@ function onWindowResize() {
 	renderer.setPixelRatio( window.devicePixelRatio );
 	renderer.setSize(width, height);
 }
-window.addEventListener( 'resize', onWindowResize, false );
+window.addEventListener('resize', onWindowResize, false);
 
-function fullscreen() {
-	if (renderer.domElement.requestFullscreen) {
-		renderer.domElement.requestFullscreen();
-	} else if (renderer.domElement.msRequestFullscreen) {
-		renderer.domElement.msRequestFullscreen();
-	} else if (renderer.domElement.mozRequestFullScreen) {
-		renderer.domElement.mozRequestFullScreen();
-	} else if (renderer.domElement.webkitRequestFullscreen) {
-		renderer.domElement.webkitRequestFullscreen();
-	}
-}
-
-function exitFullscreen() {
-	document.exitFullscreen = document.exitFullscreen || document.mozCancelFullScreen || document.webkitExitFullscreen || document.msExitFullscreen;
-	if (document.exitFullscreen)
-		document.exitFullscreen();
-}
-
-document.addEventListener( 'visibilitychange', ev => {
+document.addEventListener('visibilitychange', ev => {
 	location.reload(); // easier for now
 });
