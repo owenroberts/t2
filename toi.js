@@ -232,7 +232,7 @@ function addCactus() {
 }
 
 function randomCam() {
-	if (Game.scene != 'end') {
+	if (gme.scenes.currentName !== 'end') {
 		const params = {
 			prop: Cool.random(['position', 'rotation']),
 			axis: Cool.random(['x', 'y', 'z']),
@@ -275,7 +275,7 @@ function animate() {
 		// renderer.render(scene, camera);
 		effect.render(scene, camera);
 
-		if (Game.scene === 'dialog' && dlgs.index === 0 && dlgs.current) {
+		if (gme.scenes.currentName === 'dialog' && dlgs.index === 0 && dlgs.current) {
 			if (autoCam) dlgs.current.ready[2] = true;
 			else {
 				raycaster.set(camera.position, camera.getWorldDirection(vector));

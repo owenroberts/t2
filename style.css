@@ -38,6 +38,15 @@ button {
 #desktop {
 	opacity: 0;
 	transition: opacity 2s ease-in;
+	padding: 1em;
+}
+
+#splash {
+	margin-top:  4em;
+}
+
+#lines {
+	display:  none;
 }
 
 #three {

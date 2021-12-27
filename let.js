@@ -5,13 +5,13 @@ let tap, creditsSprite, flushSprite, passwordSprite, password = '';
 
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 3;
-	this.animation.overrideProperty('r', 1);
+	this.animation.overrideProperty('jiggleRange', 1 / 10);
 	this.displayFunc = function() {
-		this.animation.over.r += speed;
-		if (this.animation.over.r >= limit) speed *= -1;
-		if (this.animation.over.r <= 0) {
+		this.animation.override.jiggleRange += speed / 10;
+		if (this.animation.override.jiggleRange >= limit) speed *= -1;
+		if (this.animation.override.jiggleRange <= 0) {
 			speed = 0;
-			this.animation.over.r = undefined;
+			this.animation.cancelOverride();
 			this.displayFunc = undefined;
 			if (callback) callback();
 		}
@@ -21,21 +21,23 @@ Sprite.prototype.focus = function(speed, callback) {
 Sprite.prototype.ficus = function(speed, callback) {
 	const limit = speed * 4;
 	let vSpeed = 0.5;
-	this.animation.overrideProperty('r', 1);
-	this.animation.overrideProperty('w', 2);
-	this.animation.overrideProperty('v', 0.1);
+	this.animation.overrideProperty('jiggleRange', 1);
+	this.animation.overrideProperty('wiggleRange', 2);
+	this.animation.overrideProperty('wiggleSpeed', 0.1);
+	
 	this.displayFunc = function() {
-		this.animation.over.r += speed;
-		this.animation.over.v += vSpeed;
-		if (this.animation.over.r >= limit) {
+
+		this.animation.override.jiggleRange += speed;
+		this.animation.override.wiggleSpeed += vSpeed;
+
+		if (this.animation.override.jiggleRange >= limit) {
 			speed *= -1;
 			vSpeed *= -1;
 		}
-		if (this.animation.over.r <= 0) {
+
+		if (this.animation.override.jiggleRange <= 0) {
 			speed = 0;
-			this.animation.over.r = undefined;
-			this.animation.over.w = undefined;
-			this.animation.over.v = undefined;
+			this.animation.cancelOverride();
 			this.displayFunc = undefined;
 			if (callback) callback();
 		}
@@ -121,10 +123,9 @@ const dlgs = {
 		{ file: "123456", next: 'keypad' },
 
 		{ file: "free", next: 'end' }
-
 	],
 	next: function() {
-		Game.scene = dlgs.current.next;
+		gme.scenes.current = dlgs.current.next;
 		if (autoCam && dlgs.current.cam) rig.add(dlgs.current.cam);
 		if (!autoCam && dlgs.current.mcam) rig.add(dlgs.current.mcam);
 		if (dlgs.current.next == 'dialog') dlgs.nextDialog();
@@ -137,34 +138,30 @@ const dlgs = {
 		dlgs.load();
 	},
 	load: function() {
-		dlgs.sprite.resetSize();
 		dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
 		if (!dlgs.current.ready) dlgs.current.ready = [false, false, true];
-		dlgs.sprite.addAnimation(`drawings/dialogs/${dlgs.current.file}.json`, () => {
-			dlgs.sprite.fit(Game.width);
-			dlgs.sprite.position.x = Game.width / 2;
-			dlgs.sprite.position.y = Game.height / 2;
-			dlgs.sprite.center();
-			dlgs.sprite.animation.onPlayedState = function() {
+		dlgs.sprite.addAnimation(gme.anims.sprites[`dialog-${dlgs.current.file}`], () => {
+			dlgs.sprite.position = [gme.halfWidth, gme.halfHeight];
+			dlgs.sprite.animation.onPlayedOnce = function() {
 				dlgs.current.ready[0] = true;
-				dlgs.sprite.animation.stop();
 			};
 		});
 		voice.src = `audio/${dlgs.current.file}.mp3`;
-		// voice.addEventListener('loadeddata', function() { });
 		dlgs.play();
 	},
 	play: function() {
-		Game.scene = 'dialog';
+		gme.scenes.current = 'dialog';
 		voice.play();
 		toad.playAnimation('Wave+Talk');
-		dlgs.sprite.animation.setFrame(0); // play from beginning
-		dlgs.sprite.animation.start();
+		dlgs.sprite.animation.frame = 0; // play from beginning
+		dlgs.sprite.animation.play();
 	},
 	replay: function() {
-		// dlgs.current = JSON.parse(JSON.stringify(dlgs.list[dlgs.index]));
 		dlgs.current.played = false;
 		dlgs.current.ready = [false, false, true];
+		dlgs.sprite.animation.onPlayedOnce = function() {
+			dlgs.current.ready[0] = true;
+		};
 		dlgs.play();
 	},
 	isReady: function() {
@@ -178,63 +175,118 @@ function voiceEnd() {
 	toad.playAnimation();
 }
 
-function launch() {
-	Game.init({
-		width: window.innerWidth, 
-		height: window.innerHeight,
-		lps: 12, 
-		stats: false,
-		debug: false,
-		mixedColors: false
-	});
-	Game.scene = 'tap';
-	Game.ctx.strokeStyle = "#fff";
+const gme = new Game({
+	width: window.innerWidth, 
+	height: window.innerHeight,
+	stats: false,
+	debug: false,
+	multiColor: false,
+	scenes: ['tap', 'keypad', 'dialog'],
+	lineWidth: 2,
+});
+
+const assets = {
+	'tap': 'drawings/tap.json',
+	'password': 'drawings/password.json',
+	'credits': 'drawings/credits.json',
+	'flush': 'drawings/flush.json',
+	'chars': 'drawings/chars.json',
+};
+
+for (let i = 0; i < keypad.files.length; i++) {
+	assets[`${keypad.files[i]}`] = `drawings/keypad/${keypad.files[i]}.json`
 }
 
-function start() {
+for (let i = 0; i < dlgs.list.length; i++) {
+	const d = dlgs.list[i];
+	assets[`dialog-${d.file}`] = `drawings/dialogs/${d.file}.json`;
+}
+gme.loadAssets('sprites', assets);
+
+
+function launch() {
+	gme.canvas.style.display = 'block';
+	gme.scenes.current = 'tap';
+}
+
+gme.start = function() {
+	// console.log(gme.anims.sprites);
+
+	// fix dialog sprites animation
+	for (const k in gme.anims.sprites) {
+		const anim = gme.anims.sprites[k];
+		if (k.includes('dialog')) {
+			const s = gme.anims.sprites[k];
+			s.layers.forEach(layer => {
+
+				const a = {
+					prop: 'endIndex',
+					startFrame: layer.startFrame,
+					endFrame: layer.startFrame + Math.floor((layer.endFrame - layer.startFrame) * 0.75), 
+					startValue: 0,
+					endValue: anim.drawings[layer.drawingIndex].length
+				};
+
+				const b = {
+					prop: 'startIndex',
+					startFrame: layer.startFrame + Math.floor((layer.endFrame - layer.startFrame) * 0.75),
+					endFrame: layer.endFrame,
+					startValue: 0,
+					endValue: anim.drawings[layer.drawingIndex].length
+				};
+
+				layer.tweens = [a, b];
+			});
+			// anim.fps = 16;
+		}
+	}
+
+
 	const o = 6; // random offset
 	const keypadWidth = Math.min(400, width);
 	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
 	const w = keypadWidth / c; // column width
 	const h = w + (keypadWidth > 320 ? 12: 6);
-	const start = Game.width > keypadWidth ? w / 2 : 0;
-	let x = start, y = Game.height > 700 ? 100 : 10;
+	const start = gme.width > keypadWidth ? gme.halfWidth - (keypadWidth / 2) : 0;
+	let x = start, y = gme.height > 700 ? 100 : 10;
 	const keys = [...keypad.files];
+
 	for (let i = 0; i < keypad.files.length; i++) {
 		const index = Cool.randomInt(keys.length - 1);
 		const k = keys[index];
 		keys.splice(index, 1);
-		keypad.sprites[k] = new Sprite(x + Cool.random(-o, o), y + Cool.random(-o, o));
-		keypad.sprites[k].addAnimation(`drawings/keypad/${k}.json`);
+		keypad.sprites[k] = new UI({ x: x + Cool.random(-o, o), y: y + Cool.random(-o, o), animation: gme.anims.sprites[k], center: false });
 		x += w;
 		if (x > start + keypadWidth - w) x = start, y += h;
 	}
 
-	tap = new Sprite(Game.width/2, Game.height/2);
-	tap.addAnimation('drawings/tap.json', function() {
-		tap.fit(Game.width);
-		tap.center();
-	});
-	passwordSprite = new Sprite(Game.width/2, height - 80);
-	passwordSprite.addAnimation('drawings/password.json', function() {
-		passwordSprite.fit(Game.width);
-		passwordSprite.center();
-		if (y + h > passwordSprite.position.y) {
-			passwordSprite.position.y = y + h + 8;
-		}
-	});
-	dlgs.sprite = new Sprite(Game.width/2, Game.height/2);
-	// dlgs.sprite.debug = true;
-	flushSprite = new Sprite(Game.width/2, Game.height/2);
-	creditsSprite = new Sprite(0, 0);
-	creditsSprite.addAnimation('drawings/credits.json', () => {
-		creditsSprite.animation.stop();
-	});
-}
 
-function draw() {
-	switch (Game.scene) {
+	passwordSprite = new UI({ x: start, y: y + h * 3, animation: gme.anims.sprites.password, center: false });
+
+	chars = new UI({ x: start, y: y + h * 1.5, animation: gme.anims.sprites.chars, center: false});
+
+	for (let i = 1; i <= 6; i++) {
+		chars.animation.createNewState(i, i - 1, i - 1);
+	}
+
+	tap = new UI({ x: gme.halfWidth, y: gme.halfHeight, animation: gme.anims.sprites.tap });
+	tap.center = true;
+
+	dlgs.sprite = new Sprite(gme.halfWidth, gme.halfHeight);
+	dlgs.sprite.center = true;
+	flushSprite = new Sprite(gme.halfWidth, gme.halfHeight, gme.anims.sprites.flush);
+	
+	creditsSprite = new Sprite(0, 0, gme.anims.sprites.credits);
+	// creditsSprite.addAnimation('drawings/credits.json', () => {
+	// 	creditsSprite.animation.stop();
+	// });
+	gme.ctx.strokeStyle = '#ffffff';
+};
+
+gme.draw = function() {
+	switch (gme.scenes.currentName) {
 		case 'tap':
+			// console.log(tap.display);
 			tap.display();
 		break;
 		case 'dialog':
@@ -250,6 +302,10 @@ function draw() {
 			for (const k in keypad.sprites) {
 				keypad.sprites[k].display();
 			}
+			if (password.length > 0) {
+				chars.animation.state = '' + Math.min(6, password.length);
+				chars.display();
+			}
 		break;
 		case 'end':
 			flushSprite.display();
@@ -261,33 +317,32 @@ function draw() {
 function end() {
 	if (autoCam) rig.add('end');
 	if (!autoCam) rig.add('mend');
-	flushSprite.addAnimation('drawings/flush.json', function() {
-		flushSprite.scale(Game.width / flushSprite.width);
-		flushSprite.center();
+	flushSprite.addAnimation(gme.anims.sprites.flush, function() {
+		flushSprite.center = true;
 		flush.play();
 		flush.addEventListener('ended', () => {
 			creditsSprite.animation.start();
 			document.getElementById('credits').style.display = 'block';
 		});
-		flushSprite.fit(Game.width);
-		flushSprite.animation.overrideProperty('r', 1);
-		flushSprite.animation.overrideProperty('w', 2);
-		flushSprite.animation.overrideProperty('v', 1);
+
+		flushSprite.animation.overrideProperty('jiggleRange', 1);
+		flushSprite.animation.overrideProperty('wiggleRange', 2);
+		flushSprite.animation.overrideProperty('wiggleSpeed', 1);
 		// Game.clearBg = false;
 		flushSprite.displayFunc = function() {
-			this.animation.over.r += 0.01;
-			this.animation.over.w += 0.01;
-			this.animation.over.v += 0.1;
+			this.animation.override.jiggleRange += 0.01;
+			this.animation.override.wiggleRange += 0.01;
+			this.animation.override.wiggleSpeed += 0.1;
 		};
-		flushSprite.animation.onPlayedState = function() {
+		flushSprite.animation.onPlayedOnce = function() {
 			flushSprite.animation.stop();
 			// Game.clearBg = true;
 		};
 	});
-	Game.scene = 'end';
+	gme.scenes.current = 'end';
 	cactusInterval = setInterval(addCactus, 1000);
-	scene.remove( toilet );
-	toad.playAnimation( 'Weird' );
+	scene.remove(toilet);
+	toad.playAnimation('Weird');
 }
 
 /* events */
@@ -297,7 +352,8 @@ function tapStart(ev) {
 }
 
 function tapEnd(ev) {
-	switch (Game.scene) {
+	if (!tap) return;
+	switch (gme.scenes.currentName) {
 		case 'tap':
 			if (tap.tap(lastTouch.x, lastTouch.y)) {
 				voice = new Audio();
@@ -307,7 +363,7 @@ function tapEnd(ev) {
 				// document.getElementById('lines').classList.remove('bg');
 				voice.addEventListener('ended', voiceEnd);
 				tap.focus(4, () => {
-					Game.scene = 'dialog';
+					gme.scenes.current = 'dialog';
 					animate();
 					dlgs.load();
 				});
