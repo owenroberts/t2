@@ -101,6 +101,7 @@ function init() {
 
 	// change orientation for android
 	if (navigator.userAgent.toLowerCase().indexOf("android") > -1) {
+		// also triggered by responsive chrome on mac??
 		scene.rotation.set(0, -Math.PI/2, 0);
 		scene.position.set(-1, 0, -1); // match camera offset
 		// seems to change based on start angle .... 
@@ -287,7 +288,8 @@ function animate() {
 }
 	
 /* boring */
-function onWindowResize() { 
+function onWindowResize() {
+	if (!camera) return;
 	width = document.documentElement.clientWidth;
 	height = document.documentElement.clientHeight;
 	camera.aspect = width / height;
@@ -298,5 +300,5 @@ function onWindowResize() {
 window.addEventListener('resize', onWindowResize, false);
 
 document.addEventListener('visibilitychange', ev => {
-	location.reload(); // easier for now
+	// location.reload(); // easier for now
 });

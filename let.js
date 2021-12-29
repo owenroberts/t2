@@ -1,7 +1,8 @@
 /* lines */
 const keypad = { sprites: {} };
 keypad.files = '0123456789abcdefghilmnopqrstuvwxyz';
-let tap, creditsSprite, flushSprite, passwordSprite, password = '';
+let tap, creditsSprite, flushSprites, passwordSprite, password = '';
+let isLaunched = false;
 
 Sprite.prototype.focus = function(speed, callback) {
 	const limit = speed * 3;
@@ -57,7 +58,7 @@ const dlgs = {
 		{ file: "colon", next: 'dialog' },
 		{ file: "trybutt", next: 'keypad' },
 
-		{ file: "littlebutt", next: 'keypad' },
+		{ file: "doodoo", next: 'keypad' },
 
 		{ file: "either", next: 'dialog' },
 		{ file: "past", next: 'dialog' },
@@ -125,6 +126,7 @@ const dlgs = {
 		{ file: "free", next: 'end' }
 	],
 	next: function() {
+		dlgs.sprite.animation.stop();
 		gme.scenes.current = dlgs.current.next;
 		if (autoCam && dlgs.current.cam) rig.add(dlgs.current.cam);
 		if (!autoCam && dlgs.current.mcam) rig.add(dlgs.current.mcam);
@@ -144,6 +146,7 @@ const dlgs = {
 			dlgs.sprite.position = [gme.halfWidth, gme.halfHeight];
 			dlgs.sprite.animation.onPlayedOnce = function() {
 				dlgs.current.ready[0] = true;
+				dlgs.sprite.animation.stop();
 			};
 		});
 		voice.src = `audio/${dlgs.current.file}.mp3`;
@@ -203,10 +206,10 @@ for (let i = 0; i < dlgs.list.length; i++) {
 }
 gme.loadAssets('sprites', assets);
 
-
 function launch() {
 	gme.canvas.style.display = 'block';
 	gme.scenes.current = 'tap';
+	isLaunched = true;
 }
 
 gme.start = function() {
@@ -244,26 +247,35 @@ gme.start = function() {
 
 	const o = 6; // random offset
 	const keypadWidth = Math.min(400, width);
-	const c = Math.floor( keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
+	const c = Math.floor(keypadWidth / (keypadWidth > 320 ? 56 : 48)); // columns
 	const w = keypadWidth / c; // column width
 	const h = w + (keypadWidth > 320 ? 12: 6);
 	const start = gme.width > keypadWidth ? gme.halfWidth - (keypadWidth / 2) : 0;
 	let x = start, y = gme.height > 700 ? 100 : 10;
+	
 	const keys = [...keypad.files];
-
 	for (let i = 0; i < keypad.files.length; i++) {
 		const index = Cool.randomInt(keys.length - 1);
 		const k = keys[index];
 		keys.splice(index, 1);
-		keypad.sprites[k] = new UI({ x: x + Cool.random(-o, o), y: y + Cool.random(-o, o), animation: gme.anims.sprites[k], center: false });
+		keypad.sprites[k] = new ColliderSprite(x + Cool.random(-o, o), y + Cool.random(-o, o), gme.anims.sprites[k]);
 		x += w;
 		if (x > start + keypadWidth - w) x = start, y += h;
 	}
 
+	passwordSprite = new UI({ 
+		x: start, 
+		y: y + h * 2,
+		animation: gme.anims.sprites.password, 
+		center: false 
+	});
 
-	passwordSprite = new UI({ x: start, y: y + h * 3, animation: gme.anims.sprites.password, center: false });
-
-	chars = new UI({ x: start, y: y + h * 1.5, animation: gme.anims.sprites.chars, center: false});
+	chars = new UI({ 
+		x: start, 
+		y: y + h * 1, 
+		animation: gme.anims.sprites.chars, 
+		center: false
+	});
 
 	for (let i = 1; i <= 6; i++) {
 		chars.animation.createNewState(i, i - 1, i - 1);
@@ -274,19 +286,30 @@ gme.start = function() {
 
 	dlgs.sprite = new Sprite(gme.halfWidth, gme.halfHeight);
 	dlgs.sprite.center = true;
-	flushSprite = new Sprite(gme.halfWidth, gme.halfHeight, gme.anims.sprites.flush);
 	
-	creditsSprite = new Sprite(0, 0, gme.anims.sprites.credits);
-	// creditsSprite.addAnimation('drawings/credits.json', () => {
-	// 	creditsSprite.animation.stop();
-	// });
+	
+	creditsSprite = new Sprite(gme.halfWidth, gme.halfHeight, gme.anims.sprites.credits);
+	creditsSprite.center = true;
+	creditsSprite.isActive = false;
+	
+	// flush sprites ...
+	const _w = gme.anims.sprites.flush.width, _h = gme.anims.sprites.flush.height;
+	flushSprites = new SpriteCollection();
+	for (let _x = -_w / 2; _x < gme.width + _w / 2; _x += _w) {
+		for (let _y = -_h / 2; _y < gme.height + _h / 2; _y += _h) {
+			const f = new Sprite(_x, _y, gme.anims.sprites.flush);
+			f.animation.play();
+			f.fps = 0.01;
+			flushSprites.add(f);
+		}
+	}
+
 	gme.ctx.strokeStyle = '#ffffff';
 };
 
 gme.draw = function() {
 	switch (gme.scenes.currentName) {
 		case 'tap':
-			// console.log(tap.display);
 			tap.display();
 		break;
 		case 'dialog':
@@ -308,37 +331,40 @@ gme.draw = function() {
 			}
 		break;
 		case 'end':
-			flushSprite.display();
+			flushSprites.display();
 			creditsSprite.display();
 		break;
 	}
-}
+};
 
 function end() {
 	if (autoCam) rig.add('end');
 	if (!autoCam) rig.add('mend');
-	flushSprite.addAnimation(gme.anims.sprites.flush, function() {
-		flushSprite.center = true;
-		flush.play();
-		flush.addEventListener('ended', () => {
-			creditsSprite.animation.start();
-			document.getElementById('credits').style.display = 'block';
-		});
 
-		flushSprite.animation.overrideProperty('jiggleRange', 1);
-		flushSprite.animation.overrideProperty('wiggleRange', 2);
-		flushSprite.animation.overrideProperty('wiggleSpeed', 1);
-		// Game.clearBg = false;
-		flushSprite.displayFunc = function() {
-			this.animation.override.jiggleRange += 0.01;
-			this.animation.override.wiggleRange += 0.01;
-			this.animation.override.wiggleSpeed += 0.1;
-		};
-		flushSprite.animation.onPlayedOnce = function() {
-			flushSprite.animation.stop();
-			// Game.clearBg = true;
-		};
+	const nFlushPlays = 2;
+	let nFlushCount = 0;
+	let f = flushSprites.sprite(0);
+	f.displayFunc = function() {
+		this.animation.override.jiggleRange += 0.01;
+		this.animation.override.wiggleRange += 0.01;
+		this.animation.override.wiggleSpeed += 0.001;
+	};
+	f.animation.onPlayedState = function() {
+		nFlushCount++;
+		if (nFlushCount === nFlushPlays) f.animation.stop();
+		console.log(nFlushCount);
+	};
+	f.animation.overrideProperty('jiggleRange', 1);
+	f.animation.overrideProperty('wiggleRange', 2);
+	f.animation.overrideProperty('wiggleSpeed', 1);
+	f.animation.play();
+	
+	flush.play();
+	flush.addEventListener('ended', () => {
+		creditsSprite.isActive = true;
+		document.getElementById('credits').style.display = 'block';
 	});
+
 	gme.scenes.current = 'end';
 	cactusInterval = setInterval(addCactus, 1000);
 	scene.remove(toilet);
@@ -352,6 +378,7 @@ function tapStart(ev) {
 }
 
 function tapEnd(ev) {
+	if (!isLaunched) return;
 	if (!tap) return;
 	switch (gme.scenes.currentName) {
 		case 'tap':
