@@ -300,5 +300,5 @@ function onWindowResize() {
 window.addEventListener('resize', onWindowResize, false);
 
 document.addEventListener('visibilitychange', ev => {
-	// location.reload(); // easier for now
+	location.reload(); // easier for now
 });
