@@ -352,7 +352,6 @@ function end() {
 	f.animation.onPlayedState = function() {
 		nFlushCount++;
 		if (nFlushCount === nFlushPlays) f.animation.stop();
-		console.log(nFlushCount);
 	};
 	f.animation.overrideProperty('jiggleRange', 1);
 	f.animation.overrideProperty('wiggleRange', 2);
